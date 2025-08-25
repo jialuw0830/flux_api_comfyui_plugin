@@ -1,0 +1,43 @@
+{
+  "nodes": [
+    {
+      "name": "FluxAPINode",
+      "display_name": "Eigen AI FLUX API Generator",
+      "category": "Eigen AI FLUX API",
+      "description": "Generate images using FLUX.1-schnell model with LoRA support and large font prompt inputs",
+      "input_types": {
+        "required": {
+          "prompt": "STRING",
+          "width": "INT",
+          "height": "INT",
+          "seed": "INT",
+          "upscale": "BOOLEAN",
+          "upscale_factor": "INT"
+        },
+        "optional": {
+          "lora_name": "STRING",
+          "lora_weight": "FLOAT",
+          "api_url": "STRING"
+        }
+      },
+      "output_types": {
+        "image": "IMAGE",
+        "generation_info": "STRING"
+      }
+    },
+    {
+      "name": "FluxAPIModelStatusNode",
+      "display_name": "Eigen AI FLUX API Status",
+      "category": "Eigen AI FLUX API",
+      "description": "Monitor FLUX API status and system resources",
+      "input_types": {
+        "required": {
+          "api_url": "STRING"
+        }
+      },
+      "output_types": {
+        "status_info": "STRING"
+      }
+    }
+  ]
+}
