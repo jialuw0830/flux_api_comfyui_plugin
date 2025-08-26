@@ -22,7 +22,7 @@ python main.py
 
 ### Step 2: Install FLUX API Plugin
 
-#### Method 1: Git Clone (Recommended)
+#### Method 1: Git Clone (Recommended，make sure you have installed ComfyUI)
 
 ```bash
 cd ComfyUI/custom_nodes/
