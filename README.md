@@ -27,6 +27,10 @@ python main.py
 ```bash
 cd ComfyUI/custom_nodes/
 git clone https://github.com/jialuw0830/flux_api_comfyui_plugin.git
+
+# Start ComfyUI (optional)
+cd ComfyUI
+python main.py
 ```
 
 #### Method 2: Manual Download
