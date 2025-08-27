@@ -42,7 +42,7 @@ class KontextAPINode:
     """
     
     def __init__(self):
-        self.api_base_url = "http://74.81.65.108:9000"
+        self.api_base_url = "http://74.81.65.108:9001"
         self.session = requests.Session()
         self.session.timeout = 300  # 5 minutes timeout for generation
         logger.info("Kontext API Node initialized")
@@ -114,7 +114,7 @@ class KontextAPINode:
                     "display": "dropdown"
                 }),
                 "api_url": ("STRING", {
-                    "default": "http://74.81.65.108:9000",
+                    "default": "http://74.81.65.108:9001",
                     "description": "FLUX Kontext API base URL"
                 }),
                 "lora1_name": ("STRING", {
@@ -194,7 +194,7 @@ class KontextAPINode:
         """
         try:
             # Update API URL if provided
-            if api_url and api_url != "http://74.81.65.108:9000":
+            if api_url and api_url != "http://74.81.65.108:9001":
                 self.api_base_url = api_url
             
             # Convert ComfyUI image tensor to PIL Image
@@ -290,12 +290,12 @@ class KontextAPINode:
             data["loras"] = json.dumps(loras_to_apply)
             logger.info(f"Applying {len(loras_to_apply)} LoRAs: {loras_to_apply}")
             
-            logger.info(f"Sending request to FLUX Kontext API: {self.api_base_url}/generate-with-image")
+            logger.info(f"Sending request to FLUX Kontext API: {self.api_base_url}/generate-with-image-and-return")
             logger.info(f"Data: {data}")
             
             # Make API request to the image-to-image endpoint
             response = self.session.post(
-                f"{self.api_base_url}/generate-with-image",
+                f"{self.api_base_url}/generate-with-image-and-return",
                 files=files,
                 data=data,
                 timeout=300
