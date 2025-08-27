@@ -17,19 +17,17 @@ if os.path.exists(nodes_dir):
     
     # Import the main nodes
     try:
-        from flux_api_node import FluxAPINode, FluxAPIModelStatusNode
+        from flux_api_node import FluxAPINode
         from kontext_api_node import KontextAPINode
         
         # Register the nodes
         NODE_CLASS_MAPPINGS.update({
             "FluxAPINode": FluxAPINode,
-            "FluxAPIModelStatusNode": FluxAPIModelStatusNode,
             "KontextAPINode": KontextAPINode
         })
         
         NODE_DISPLAY_NAME_MAPPINGS.update({
             "FluxAPINode": "Eigen AI FLUX Schnell API Generator",
-            "FluxAPIModelStatusNode": "Eigen AI FLUX API Status",
             "KontextAPINode": "Eigen AI FLUX Kontext API Generator"
         })
         

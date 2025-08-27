@@ -92,6 +92,22 @@ class KontextAPINode:
                     "step": 0.1,
                     "display": "slider"
                 }),
+                "image_strength": ("FLOAT", {
+                    "default": 0.8,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "step": 0.1,
+                    "display": "slider",
+                    "description": "How much the uploaded image influences the generation (0.0 = none, 1.0 = strong)"
+                }),
+                "image_guidance": ("FLOAT", {
+                    "default": 1.5,
+                    "min": 0.1,
+                    "max": 10.0,
+                    "step": 0.1,
+                    "display": "slider",
+                    "description": "Guidance scale for image conditioning (higher = more faithful to image)"
+                }),
                 "seed": ("INT", {
                     "default": -1,
                     "min": -1,
@@ -99,13 +115,7 @@ class KontextAPINode:
                     "step": 1,
                     "display": "number"
                 }),
-                "negative_prompt": ("STRING", {
-                    "default": "",
-                    "description": "Negative prompt (what to avoid)",
-                    "multiline": True,
-                    "max_length": 1000,
-                    "display": "textarea"
-                }),
+
                 "upscale": ("BOOLEAN", {
                     "default": False,
                     "description": "Whether to upscale the generated image"
@@ -168,8 +178,7 @@ class KontextAPINode:
     CATEGORY = "Eigen AI FLUX Kontext API"
     OUTPUT_NODE = False
     
-    def generate_image(self, image, prompt, width, height, num_inference_steps, guidance_scale, 
-                      seed, negative_prompt, upscale, upscale_factor, api_url,
+    def generate_image(self, image, prompt, width, height, image_strength, image_guidance, seed, upscale, upscale_factor, api_url,
                       lora1_name="/data/weights/lora_checkpoints/Studio_Ghibli_Flux.safetensors", lora1_weight=1.0, 
                       lora2_name="none", lora2_weight=1.0, 
                       lora3_name="none", lora3_weight=1.0):
@@ -181,10 +190,9 @@ class KontextAPINode:
             prompt (str): Text prompt for generation
             width (int): Width
             height (int): Height
-            num_inference_steps (int): Number of inference steps
-            guidance_scale (float): Guidance scale for generation
+            image_strength (float): How much the uploaded image influences the generation (0.0 = none, 1.0 = strong)
+            image_guidance (float): Guidance scale for image conditioning (higher = more faithful to image)
             seed (int): Random seed (-1 for random)
-            negative_prompt (str): Negative prompt
             upscale (bool): Whether to enable upscaling
             upscale_factor (int): Upscaling factor
             api_url (str): FLUX Kontext API base URL
@@ -245,8 +253,8 @@ class KontextAPINode:
             
             data = {
                 'prompt': prompt,
-                'num_inference_steps': num_inference_steps,
-                'guidance_scale': guidance_scale,
+                'image_strength': image_strength,
+                'image_guidance': image_guidance,
                 'width': width,
                 'height': height,
                 'upscale': upscale,
@@ -256,10 +264,6 @@ class KontextAPINode:
             # Add seed if specified
             if seed != -1:
                 data['seed'] = seed
-            
-            # Add negative prompt if provided
-            if negative_prompt and negative_prompt.strip():
-                data['negative_prompt'] = negative_prompt.strip()
             
             # Add LoRA configuration
             loras_to_apply = []
@@ -429,7 +433,7 @@ class KontextAPINode:
         """
         # Always regenerate when prompt, dimensions, or LoRA settings change
         lora_hash = f"{kwargs.get('lora1_name', '/data/weights/lora_checkpoints/Studio_Ghibli_Flux.safetensors')}_{kwargs.get('lora1_weight', 1.0)}_{kwargs.get('lora2_name', 'none')}_{kwargs.get('lora2_weight', 1.0)}_{kwargs.get('lora3_name', 'none')}_{kwargs.get('lora3_weight', 1.0)}"
-        return f"{kwargs.get('prompt', '')}_{kwargs.get('width', 512)}_{kwargs.get('height', 512)}_{kwargs.get('num_inference_steps', 25)}_{kwargs.get('guidance_scale', 2.5)}_{lora_hash}"
+        return f"{kwargs.get('prompt', '')}_{kwargs.get('width', 512)}_{kwargs.get('height', 512)}_{kwargs.get('image_strength', 0.8)}_{kwargs.get('image_guidance', 1.5)}_{lora_hash}"
 
 
 

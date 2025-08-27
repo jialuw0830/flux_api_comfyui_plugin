@@ -372,75 +372,15 @@ class FluxAPINode:
         return f"{kwargs.get('prompt', '')}_{kwargs.get('width', 512)}_{kwargs.get('height', 512)}_{lora_hash}"
 
 
-class FluxAPIModelStatusNode:
-    """
-    Node to check Eigen AI FLUX API model status and system information
-    """
-    
-    def __init__(self):
-        self.api_base_url = "http://74.81.65.108:8000"
-        self.session = requests.Session()
-        logger.info("Websocket connected")
-    
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "api_url": ("STRING", {
-                    "default": "http://74.81.65.108:8000",
-                    "description": "Eigen AI FLUX API base URL"
-                }),
-            }
-        }
-    
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("status_info",)
-    FUNCTION = "get_status"
-    CATEGORY = "Eigen AI FLUX API"
-    OUTPUT_NODE = False
-    
-    def get_status(self, api_url="http://74.81.65.108:8000"):
-        """
-        Get Eigen AI FLUX API model status and system information
-        """
-        try:
-            if api_url and api_url != "http://74.81.65.108:8000":
-                self.api_base_url = api_url
-            
-            response = self.session.get(f"{self.api_base_url}/model-status")
-            
-            if response.status_code != 200:
-                return (f"Error: API request failed with status {response.status_code}",)
-            
-            result = response.json()
-            
-            status_text = f"Eigen AI FLUX API Model Status:\n"
-            status_text += f"Model Loaded: {'Yes' if result.get('model_loaded', False) else 'No'}\n"
-            status_text += f"Model Type: {result.get('model_type', 'Unknown')}\n"
-            status_text += f"Selected GPU: {result.get('selected_gpu', 'Unknown')}\n"
-            status_text += f"VRAM Usage: {result.get('vram_usage_gb', 'Unknown')} GB\n"
-            status_text += f"System Memory: {result.get('system_memory_used_gb', 'Unknown')}/{result.get('system_memory_total_gb', 'Unknown')} GB\n"
-            
-            lora_loaded = result.get('lora_loaded')
-            if lora_loaded:
-                status_text += f"LoRA Loaded: {lora_loaded} (weight: {result.get('lora_weight', 'Unknown')})"
-            else:
-                status_text += f"LoRA Loaded: None"
-            
-            return (status_text,)
-            
-        except Exception as e:
-            return (f"Error getting status: {str(e)}",)
+
 
 
 # Node class mappings
 NODE_CLASS_MAPPINGS = {
-    "FluxAPINode": FluxAPINode,
-    "FluxAPIModelStatusNode": FluxAPIModelStatusNode
+    "FluxAPINode": FluxAPINode
 }
 
 # Node display name mappings
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "FluxAPINode": "Eigen AI FLUX Schnell API Generator",
-    "FluxAPIModelStatusNode": "Eigen AI FLUX API Status"
+    "FluxAPINode": "Eigen AI FLUX Schnell API Generator"
 }
