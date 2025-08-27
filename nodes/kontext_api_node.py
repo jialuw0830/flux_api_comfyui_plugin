@@ -21,6 +21,7 @@ import io
 import os
 import logging
 import torch
+import time
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -306,37 +307,53 @@ class KontextAPINode:
                 logger.error(error_msg)
                 raise Exception(error_msg)
             
-            # Parse response
-            result = response.json()
-            logger.info(f"API response received: {result.get('message', 'Success')}")
-            logger.info(f"Full API response result: {result}")
+            # Check if response is image data (direct image return)
+            content_type = response.headers.get('content-type', '')
+            logger.info(f"Response content type: {content_type}")
             
-            # Get download URL from response
-            download_url = result.get("download_url", "")
-            if not download_url:
-                raise Exception("No download URL in API response")
-            
-            # Construct full download URL
-            if download_url.startswith("/"):
-                full_download_url = f"{self.api_base_url}{download_url}"
+            if 'image/' in content_type:
+                # Direct image response - use response content directly
+                logger.info(f"Received direct image response, size: {len(response.content)} bytes")
+                image_data = response.content
             else:
-                full_download_url = f"{self.api_base_url}/{download_url}"
-            
-            logger.info(f"Downloading image from: {full_download_url}")
-            
-            # Download the generated image
-            try:
-                image_response = self.session.get(full_download_url, timeout=60)
-                logger.info(f"Image download response status: {image_response.status_code}")
-            except Exception as download_error:
-                logger.error(f"Image download failed: {download_error}")
-                raise Exception(f"Failed to download image: {download_error}")
-            
-            if image_response.status_code != 200:
-                raise Exception(f"Failed to download image: {image_response.status_code}")
-            
-            # Convert image to PIL Image
-            image_data = image_response.content
+                # JSON response with download URL (fallback)
+                logger.info("Received JSON response, attempting to parse")
+                try:
+                    result = response.json()
+                    logger.info(f"API response received: {result.get('message', 'Success')}")
+                    logger.info(f"Full API response result: {result}")
+                    
+                    # Get download URL from response
+                    download_url = result.get("download_url", "")
+                    if not download_url:
+                        raise Exception("No download URL in API response")
+                    
+                    # Construct full download URL
+                    if download_url.startswith("/"):
+                        full_download_url = f"{self.api_base_url}{download_url}"
+                    else:
+                        full_download_url = f"{self.api_base_url}/{download_url}"
+                    
+                    logger.info(f"Downloading image from: {full_download_url}")
+                    
+                    # Download the generated image
+                    try:
+                        image_response = self.session.get(full_download_url, timeout=60)
+                        logger.info(f"Image download response status: {image_response.status_code}")
+                    except Exception as download_error:
+                        logger.error(f"Image download failed: {download_error}")
+                        raise Exception(f"Failed to download image: {download_error}")
+                    
+                    if image_response.status_code != 200:
+                        raise Exception(f"Failed to download image: {image_response.status_code}")
+                    
+                    image_data = image_response.content
+                    logger.info(f"Downloaded image data size: {len(image_data)} bytes")
+                    
+                except json.JSONDecodeError as json_error:
+                    logger.error(f"JSON decode error: {json_error}")
+                    logger.error(f"Response text: {response.text[:500]}")
+                    raise Exception(f"Invalid response from API: {json_error}")
             logger.info(f"Downloaded image data size: {len(image_data)} bytes")
             
             pil_image = Image.open(io.BytesIO(image_data))
@@ -368,25 +385,47 @@ class KontextAPINode:
             logger.info(f"Tensor min value: {image_tensor.min().item()}, max value: {image_tensor.max().item()}")
             
             # Prepare generation info
-            generation_info = {
-                "message": result.get("message", "Image generated successfully"),
-                "filename": result.get("filename", ""),
-                "generation_time": result.get("generation_time", ""),
-                "width": result.get("width", width),
-                "height": result.get("height", height),
-                "seed": result.get("seed", seed)
-            }
-            
-            info_text = f"Kontext Image Generated Successfully!\n"
-            info_text += f"Filename: {generation_info['filename']}\n"
-            info_text += f"Generation Time: {generation_info['generation_time']}\n"
-            info_text += f"Dimensions: {generation_info['width']}x{generation_info['height']}\n"
-            if generation_info['seed'] != -1:
-                info_text += f"Seed: {generation_info['seed']}\n"
-            if len(loras_to_apply) > 0:
-                info_text += f"LoRAs Applied: {len(loras_to_apply)}"
-            
-            logger.info(f"Kontext image generated successfully: {generation_info['filename']}")
+            if 'image/' in content_type:
+                # Direct image response - use basic info
+                generation_info = {
+                    "message": "Image generated successfully (direct response)",
+                    "filename": f"generated_{int(time.time())}.png",
+                    "generation_time": "N/A (direct response)",
+                    "width": width,
+                    "height": height,
+                    "seed": seed
+                }
+                
+                info_text = f"Kontext Image Generated Successfully!\n"
+                info_text += f"Response Type: Direct Image\n"
+                info_text += f"Dimensions: {generation_info['width']}x{generation_info['height']}\n"
+                if generation_info['seed'] != -1:
+                    info_text += f"Seed: {generation_info['seed']}\n"
+                if len(loras_to_apply) > 0:
+                    info_text += f"LoRAs Applied: {len(loras_to_apply)}"
+                
+                logger.info(f"Kontext image generated successfully via direct response")
+            else:
+                # JSON response - use detailed info
+                generation_info = {
+                    "message": result.get("message", "Image generated successfully"),
+                    "filename": result.get("filename", ""),
+                    "generation_time": result.get("generation_time", ""),
+                    "width": result.get("width", width),
+                    "height": result.get("height", height),
+                    "seed": result.get("seed", seed)
+                }
+                
+                info_text = f"Kontext Image Generated Successfully!\n"
+                info_text += f"Filename: {generation_info['filename']}\n"
+                info_text += f"Generation Time: {generation_info['generation_time']}\n"
+                info_text += f"Dimensions: {generation_info['width']}x{generation_info['height']}\n"
+                if generation_info['seed'] != -1:
+                    info_text += f"Seed: {generation_info['seed']}\n"
+                if len(loras_to_apply) > 0:
+                    info_text += f"LoRAs Applied: {len(loras_to_apply)}"
+                
+                logger.info(f"Kontext image generated successfully: {generation_info['filename']}")
             
             # ComfyUI expects IMAGE type to be PyTorch tensor
             logger.info(f"Returning PyTorch tensor for ComfyUI: {image_tensor.shape}, {image_tensor.dtype}")
