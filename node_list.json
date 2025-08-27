@@ -12,12 +12,16 @@
           "height": "INT",
           "seed": "INT",
           "upscale": "BOOLEAN",
-          "upscale_factor": "INT"
+          "upscale_factor": "INT",
+          "lora1_name": "STRING",
+          "lora1_weight": "FLOAT",
+          "api_url": "STRING"
         },
         "optional": {
-          "lora_name": "STRING",
-          "lora_weight": "FLOAT",
-          "api_url": "STRING"
+          "lora2_name": "STRING",
+          "lora2_weight": "FLOAT",
+          "lora3_name": "STRING",
+          "lora3_weight": "FLOAT"
         }
       },
       "output_types": {
