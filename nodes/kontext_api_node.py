@@ -42,7 +42,7 @@ class KontextAPINode:
     """
     
     def __init__(self):
-        self.api_base_url = "http://localhost:9000"
+        self.api_base_url = "http://74.81.65.108:9000"
         self.session = requests.Session()
         self.session.timeout = 300  # 5 minutes timeout for generation
         logger.info("Kontext API Node initialized")
@@ -76,20 +76,6 @@ class KontextAPINode:
                     "min": 256,
                     "max": 1024,
                     "step": 64,
-                    "display": "slider"
-                }),
-                "num_inference_steps": ("INT", {
-                    "default": 25,
-                    "min": 1,
-                    "max": 100,
-                    "step": 1,
-                    "display": "slider"
-                }),
-                "guidance_scale": ("FLOAT", {
-                    "default": 2.5,
-                    "min": 0.1,
-                    "max": 20.0,
-                    "step": 0.1,
                     "display": "slider"
                 }),
                 "image_strength": ("FLOAT", {
@@ -128,12 +114,12 @@ class KontextAPINode:
                     "display": "dropdown"
                 }),
                 "api_url": ("STRING", {
-                    "default": "http://localhost:9000",
+                    "default": "http://74.81.65.108:9000",
                     "description": "FLUX Kontext API base URL"
                 }),
                 "lora1_name": ("STRING", {
-                    "default": "/data/weights/lora_checkpoints/Studio_Ghibli_Flux.safetensors",
-                    "description": "First LoRA name (default: Studio Ghibli Flux)",
+                    "default": "21j3h123/realEarthKontext",
+                    "description": "First LoRA name (default: realEarthKontext emoji style)",
                     "multiline": False
                 }),
                 "lora1_weight": ("FLOAT", {
@@ -179,7 +165,7 @@ class KontextAPINode:
     OUTPUT_NODE = False
     
     def generate_image(self, image, prompt, width, height, image_strength, image_guidance, seed, upscale, upscale_factor, api_url,
-                      lora1_name="/data/weights/lora_checkpoints/Studio_Ghibli_Flux.safetensors", lora1_weight=1.0, 
+                      lora1_name="21j3h123/realEarthKontext", lora1_weight=1.0, 
                       lora2_name="none", lora2_weight=1.0, 
                       lora3_name="none", lora3_weight=1.0):
         """
@@ -208,7 +194,7 @@ class KontextAPINode:
         """
         try:
             # Update API URL if provided
-            if api_url and api_url != "http://localhost:9000":
+            if api_url and api_url != "http://74.81.65.108:9000":
                 self.api_base_url = api_url
             
             # Convert ComfyUI image tensor to PIL Image
@@ -387,8 +373,6 @@ class KontextAPINode:
                 "generation_time": result.get("generation_time", ""),
                 "width": result.get("width", width),
                 "height": result.get("height", height),
-                "num_inference_steps": num_inference_steps,
-                "guidance_scale": guidance_scale,
                 "seed": result.get("seed", seed)
             }
             
@@ -396,8 +380,6 @@ class KontextAPINode:
             info_text += f"Filename: {generation_info['filename']}\n"
             info_text += f"Generation Time: {generation_info['generation_time']}\n"
             info_text += f"Dimensions: {generation_info['width']}x{generation_info['height']}\n"
-            info_text += f"Inference Steps: {generation_info['num_inference_steps']}\n"
-            info_text += f"Guidance Scale: {generation_info['guidance_scale']}\n"
             if generation_info['seed'] != -1:
                 info_text += f"Seed: {generation_info['seed']}\n"
             if len(loras_to_apply) > 0:
@@ -432,7 +414,7 @@ class KontextAPINode:
         Force re-execution when key parameters change
         """
         # Always regenerate when prompt, dimensions, or LoRA settings change
-        lora_hash = f"{kwargs.get('lora1_name', '/data/weights/lora_checkpoints/Studio_Ghibli_Flux.safetensors')}_{kwargs.get('lora1_weight', 1.0)}_{kwargs.get('lora2_name', 'none')}_{kwargs.get('lora2_weight', 1.0)}_{kwargs.get('lora3_name', 'none')}_{kwargs.get('lora3_weight', 1.0)}"
+        lora_hash = f"{kwargs.get('lora1_name', '21j3h123/realEarthKontext')}_{kwargs.get('lora1_weight', 1.0)}_{kwargs.get('lora2_name', 'none')}_{kwargs.get('lora2_weight', 1.0)}_{kwargs.get('lora3_name', 'none')}_{kwargs.get('lora3_weight', 1.0)}"
         return f"{kwargs.get('prompt', '')}_{kwargs.get('width', 512)}_{kwargs.get('height', 512)}_{kwargs.get('image_strength', 0.8)}_{kwargs.get('image_guidance', 1.5)}_{lora_hash}"
 
 
