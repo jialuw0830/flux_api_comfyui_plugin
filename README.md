@@ -31,7 +31,7 @@ python main.py
 1. Install **ComfyUI-Manager** if not already installed:
 
    ```bash
-   cd ComfyUI/custom_nodes/
+   cd ComfyUI/custom_nodes
    git clone https://github.com/ltdrdata/ComfyUI-Manager.git
    ```
 

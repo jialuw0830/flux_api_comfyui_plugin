@@ -1,8 +1,9 @@
 """
-ComfyUI Node for Eigen AI FLUX API Integration
-This node allows ComfyUI to use FLUX.1-schnell model for content generation with LoRA support
+ComfyUI Node for Eigen AI FLUX Kontext API Integration
+This node allows ComfyUI to use FLUX.1-Kontext-dev model for image-to-image generation
 
 Key Features:
+- Image-to-image generation using FLUX.1-Kontext-dev model
 - Support for up to 3 LoRAs simultaneously
 - Default LoRA configuration, ready to use
 - User-friendly interface
@@ -25,25 +26,26 @@ import torch
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class FluxAPINode:
+class KontextAPINode:
     """
-    ComfyUI Eigen AI FLUX API Integration Node
+    ComfyUI Eigen AI FLUX Kontext API Integration Node
     
-    This node sends requests to the Eigen AI FLUX API and returns generated images
-    that can be used in ComfyUI workflows.
+    This node sends requests to the Eigen AI FLUX Kontext API and returns generated images
+    that can be used in ComfyUI workflows. It performs image-to-image generation.
     
     Usage:
-    1. Set prompt and image dimensions
-    2. Select up to 3 LoRAs and adjust weights
-    3. Optionally enable image upscaling
-    4. Run the node to generate images
+    1. Connect an input image
+    2. Set prompt and image dimensions
+    3. Select up to 3 LoRAs and adjust weights
+    4. Optionally enable image upscaling
+    5. Run the node to generate images
     """
     
     def __init__(self):
-        self.api_base_url = "http://74.81.65.108:8000"
+        self.api_base_url = "http://localhost:9000"
         self.session = requests.Session()
         self.session.timeout = 300  # 5 minutes timeout for generation
-        logger.info("Websocket connected")
+        logger.info("Kontext API Node initialized")
         
     @classmethod
     def INPUT_TYPES(s):
@@ -52,12 +54,15 @@ class FluxAPINode:
         """
         return {
             "required": {
+                "image": ("IMAGE", {
+                    "description": "Input image for image-to-image generation"
+                }),
                 "prompt": ("STRING", {
                     "default": "A beautiful landscape painting in Studio Ghibli style",
-                    "description": "Text prompt for generation (or connect from FluxPromptNode)",
+                    "description": "Text prompt for generation",
                     "multiline": True,
                     "max_length": 2000,
-                    "display": "textarea"  # Use textarea display for larger input area
+                    "display": "textarea"
                 }),
                 "width": ("INT", {
                     "default": 512,
@@ -73,12 +78,33 @@ class FluxAPINode:
                     "step": 64,
                     "display": "slider"
                 }),
+                "num_inference_steps": ("INT", {
+                    "default": 25,
+                    "min": 1,
+                    "max": 100,
+                    "step": 1,
+                    "display": "slider"
+                }),
+                "guidance_scale": ("FLOAT", {
+                    "default": 2.5,
+                    "min": 0.1,
+                    "max": 20.0,
+                    "step": 0.1,
+                    "display": "slider"
+                }),
                 "seed": ("INT", {
                     "default": -1,
                     "min": -1,
                     "max": 2**32 - 1,
                     "step": 1,
                     "display": "number"
+                }),
+                "negative_prompt": ("STRING", {
+                    "default": "",
+                    "description": "Negative prompt (what to avoid)",
+                    "multiline": True,
+                    "max_length": 1000,
+                    "display": "textarea"
                 }),
                 "upscale": ("BOOLEAN", {
                     "default": False,
@@ -92,10 +118,10 @@ class FluxAPINode:
                     "display": "dropdown"
                 }),
                 "api_url": ("STRING", {
-                    "default": "http://74.81.65.108:8000",
-                    "description": "Eigen AI FLUX API base URL"
+                    "default": "http://localhost:9000",
+                    "description": "FLUX Kontext API base URL"
                 }),
-                 "lora1_name": ("STRING", {
+                "lora1_name": ("STRING", {
                     "default": "/data/weights/lora_checkpoints/Studio_Ghibli_Flux.safetensors",
                     "description": "First LoRA name (default: Studio Ghibli Flux)",
                     "multiline": False
@@ -109,7 +135,6 @@ class FluxAPINode:
                 }),
             },
             "optional": {
-               
                 "lora2_name": ("STRING", {
                     "default": "none",
                     "description": "Second LoRA name (optional, use 'none' to disable)",
@@ -140,24 +165,29 @@ class FluxAPINode:
     RETURN_TYPES = ("IMAGE", "STRING")
     RETURN_NAMES = ("image", "generation_info")
     FUNCTION = "generate_image"
-    CATEGORY = "Eigen AI FLUX API"
+    CATEGORY = "Eigen AI FLUX Kontext API"
     OUTPUT_NODE = False
     
-    def generate_image(self, prompt, width, height, seed, upscale, upscale_factor, api_url,
+    def generate_image(self, image, prompt, width, height, num_inference_steps, guidance_scale, 
+                      seed, negative_prompt, upscale, upscale_factor, api_url,
                       lora1_name="/data/weights/lora_checkpoints/Studio_Ghibli_Flux.safetensors", lora1_weight=1.0, 
                       lora2_name="none", lora2_weight=1.0, 
                       lora3_name="none", lora3_weight=1.0):
         """
-        Generate content using Eigen AI FLUX API
+        Generate content using Eigen AI FLUX Kontext API (image-to-image)
         
         Args:
+            image: Input image tensor from ComfyUI
             prompt (str): Text prompt for generation
             width (int): Width
             height (int): Height
+            num_inference_steps (int): Number of inference steps
+            guidance_scale (float): Guidance scale for generation
             seed (int): Random seed (-1 for random)
+            negative_prompt (str): Negative prompt
             upscale (bool): Whether to enable upscaling
             upscale_factor (int): Upscaling factor
-            api_url (str): Eigen AI FLUX API base URL
+            api_url (str): FLUX Kontext API base URL
             lora1_name (str): First LoRA name (optional, has default)
             lora1_weight (float): First LoRA weight (optional, has default)
             lora2_name (str): Second LoRA name (optional)
@@ -170,21 +200,66 @@ class FluxAPINode:
         """
         try:
             # Update API URL if provided
-            if api_url and api_url != "http://74.81.65.108:8000":
+            if api_url and api_url != "http://localhost:9000":
                 self.api_base_url = api_url
             
-            # Prepare request payload
-            payload = {
-                "prompt": prompt,
-                "width": width,
-                "height": height,
-                "upscale": upscale,
-                "upscale_factor": upscale_factor
+            # Convert ComfyUI image tensor to PIL Image
+            if isinstance(image, torch.Tensor):
+                # Remove batch dimension if present
+                if len(image.shape) == 4:
+                    image = image.squeeze(0)
+                
+                # Convert to numpy and then to PIL
+                image_np = image.cpu().numpy()
+                # Ensure values are in [0, 255] range
+                if image_np.max() <= 1.0:
+                    image_np = (image_np * 255).astype(np.uint8)
+                else:
+                    image_np = image_np.astype(np.uint8)
+                
+                # Convert to PIL Image
+                pil_image = Image.fromarray(image_np)
+                logger.info(f"Converted ComfyUI tensor to PIL image: {pil_image.size}, {pil_image.mode}")
+            else:
+                pil_image = image
+            
+            # Ensure image is in RGB mode
+            if pil_image.mode != "RGB":
+                pil_image = pil_image.convert("RGB")
+                logger.info(f"Converted image to RGB mode")
+            
+            # Resize image to requested dimensions if needed
+            if pil_image.size != (width, height):
+                pil_image = pil_image.resize((width, height), Image.Resampling.LANCZOS)
+                logger.info(f"Resized image to {width}x{height}")
+            
+            # Convert PIL image to bytes for API request
+            img_byte_arr = io.BytesIO()
+            pil_image.save(img_byte_arr, format='PNG')
+            img_byte_arr = img_byte_arr.getvalue()
+            
+            # Prepare form data for the API request
+            files = {
+                'image': ('input_image.png', img_byte_arr, 'image/png')
+            }
+            
+            data = {
+                'prompt': prompt,
+                'num_inference_steps': num_inference_steps,
+                'guidance_scale': guidance_scale,
+                'width': width,
+                'height': height,
+                'upscale': upscale,
+                'upscale_factor': upscale_factor
             }
             
             # Add seed if specified
             if seed != -1:
-                payload["seed"] = seed
+                data['seed'] = seed
+            
+            # Add negative prompt if provided
+            if negative_prompt and negative_prompt.strip():
+                data['negative_prompt'] = negative_prompt.strip()
             
             # Add LoRA configuration
             loras_to_apply = []
@@ -221,18 +296,19 @@ class FluxAPINode:
                 logger.warning(f"Too many LoRAs specified ({len(loras_to_apply)}), limiting to first 3")
                 loras_to_apply = loras_to_apply[:3]
             
-            # Add LoRAs to payload (LoRA 1 is always required)
-            payload["loras"] = loras_to_apply
+            # Add LoRAs to data (LoRA 1 is always required)
+            data["loras"] = json.dumps(loras_to_apply)
             logger.info(f"Applying {len(loras_to_apply)} LoRAs: {loras_to_apply}")
             
-            logger.info(f"Sending request to Eigen AI FLUX API: {self.api_base_url}/generate")
-            logger.info(f"Payload: {json.dumps(payload, indent=2)}")
+            logger.info(f"Sending request to FLUX Kontext API: {self.api_base_url}/generate-with-image")
+            logger.info(f"Data: {data}")
             
-            # Make API request
+            # Make API request to the image-to-image endpoint
             response = self.session.post(
-                f"{self.api_base_url}/generate",
-                json=payload,
-                headers={"Content-Type": "application/json"}
+                f"{self.api_base_url}/generate-with-image",
+                files=files,
+                data=data,
+                timeout=300
             )
             
             if response.status_code != 200:
@@ -244,7 +320,7 @@ class FluxAPINode:
             result = response.json()
             logger.info(f"API response received: {result.get('message', 'Success')}")
             
-            # Get download URL from response (use download_url instead of image_url)
+            # Get download URL from response
             download_url = result.get("download_url", "")
             if not download_url:
                 raise Exception("No download URL in API response")
@@ -257,13 +333,14 @@ class FluxAPINode:
             
             logger.info(f"Downloading image from: {full_download_url}")
             
-            # Download the generated image using the download endpoint
+            # Download the generated image
             try:
                 image_response = self.session.get(full_download_url, timeout=60)
                 logger.info(f"Image download response status: {image_response.status_code}")
             except Exception as download_error:
                 logger.error(f"Image download failed: {download_error}")
                 raise Exception(f"Failed to download image: {download_error}")
+            
             if image_response.status_code != 200:
                 raise Exception(f"Failed to download image: {image_response.status_code}")
             
@@ -299,55 +376,38 @@ class FluxAPINode:
             # Verify tensor values
             logger.info(f"Tensor min value: {image_tensor.min().item()}, max value: {image_tensor.max().item()}")
             
-            # Additional ComfyUI compatibility checks
-            logger.info(f"Tensor device: {image_tensor.device}")
-            logger.info(f"Tensor requires grad: {image_tensor.requires_grad}")
-            
-            # Final tensor validation for ComfyUI
-            logger.info(f"Final tensor info:")
-            logger.info(f"  - Tensor: {image_tensor}")
-            logger.info(f"  - Shape: {image_tensor.shape}")
-            logger.info(f"  - Dtype: {image_tensor.dtype}")
-            logger.info(f"  - Device: {image_tensor.device}")
-            logger.info(f"  - Contiguous: {image_tensor.is_contiguous()}")
-            logger.info(f"  - Value range: [{image_tensor.min().item():.3f}, {image_tensor.max().item():.3f}]")
-            logger.info(f"  - Memory layout: {image_tensor.stride()}")
-            
             # Prepare generation info
             generation_info = {
                 "message": result.get("message", "Image generated successfully"),
                 "filename": result.get("filename", ""),
                 "generation_time": result.get("generation_time", ""),
-                "vram_usage": result.get("vram_usage_gb", ""),
-                "model_type": result.get("model_type", ""),
-                "lora_applied": result.get("lora_applied", ""),
-                "lora_weight": result.get("lora_weight", ""),
                 "width": result.get("width", width),
                 "height": result.get("height", height),
+                "num_inference_steps": num_inference_steps,
+                "guidance_scale": guidance_scale,
                 "seed": result.get("seed", seed)
             }
             
-            info_text = f"Image Generated Successfully!\n"
+            info_text = f"Kontext Image Generated Successfully!\n"
             info_text += f"Filename: {generation_info['filename']}\n"
             info_text += f"Generation Time: {generation_info['generation_time']}\n"
-            info_text += f"VRAM Usage: {generation_info['vram_usage']}\n"
-            info_text += f"Model Type: {generation_info['model_type']}\n"
             info_text += f"Dimensions: {generation_info['width']}x{generation_info['height']}\n"
+            info_text += f"Inference Steps: {generation_info['num_inference_steps']}\n"
+            info_text += f"Guidance Scale: {generation_info['guidance_scale']}\n"
             if generation_info['seed'] != -1:
                 info_text += f"Seed: {generation_info['seed']}\n"
-            if generation_info['lora_applied']:
-                info_text += f"LoRA Applied: {generation_info['lora_applied']} (weight: {generation_info['lora_weight']})"
+            if len(loras_to_apply) > 0:
+                info_text += f"LoRAs Applied: {len(loras_to_apply)}"
             
-            logger.info(f"Image generated successfully: {generation_info['filename']}")
+            logger.info(f"Kontext image generated successfully: {generation_info['filename']}")
             
             # ComfyUI expects IMAGE type to be PyTorch tensor
-            # Save Image and Preview Image nodes will call .cpu().numpy() internally
             logger.info(f"Returning PyTorch tensor for ComfyUI: {image_tensor.shape}, {image_tensor.dtype}")
             
             return (image_tensor, info_text)
             
         except Exception as e:
-            error_msg = f"Error generating image: {str(e)}"
+            error_msg = f"Error generating Kontext image: {str(e)}"
             logger.error(error_msg)
             
             # Return a placeholder image and error info
@@ -369,78 +429,18 @@ class FluxAPINode:
         """
         # Always regenerate when prompt, dimensions, or LoRA settings change
         lora_hash = f"{kwargs.get('lora1_name', '/data/weights/lora_checkpoints/Studio_Ghibli_Flux.safetensors')}_{kwargs.get('lora1_weight', 1.0)}_{kwargs.get('lora2_name', 'none')}_{kwargs.get('lora2_weight', 1.0)}_{kwargs.get('lora3_name', 'none')}_{kwargs.get('lora3_weight', 1.0)}"
-        return f"{kwargs.get('prompt', '')}_{kwargs.get('width', 512)}_{kwargs.get('height', 512)}_{lora_hash}"
+        return f"{kwargs.get('prompt', '')}_{kwargs.get('width', 512)}_{kwargs.get('height', 512)}_{kwargs.get('num_inference_steps', 25)}_{kwargs.get('guidance_scale', 2.5)}_{lora_hash}"
 
 
-class FluxAPIModelStatusNode:
-    """
-    Node to check Eigen AI FLUX API model status and system information
-    """
-    
-    def __init__(self):
-        self.api_base_url = "http://74.81.65.108:8000"
-        self.session = requests.Session()
-        logger.info("Websocket connected")
-    
-    @classmethod
-    def INPUT_TYPES(s):
-        return {
-            "required": {
-                "api_url": ("STRING", {
-                    "default": "http://74.81.65.108:8000",
-                    "description": "Eigen AI FLUX API base URL"
-                }),
-            }
-        }
-    
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("status_info",)
-    FUNCTION = "get_status"
-    CATEGORY = "Eigen AI FLUX API"
-    OUTPUT_NODE = False
-    
-    def get_status(self, api_url="http://74.81.65.108:8000"):
-        """
-        Get Eigen AI FLUX API model status and system information
-        """
-        try:
-            if api_url and api_url != "http://74.81.65.108:8000":
-                self.api_base_url = api_url
-            
-            response = self.session.get(f"{self.api_base_url}/model-status")
-            
-            if response.status_code != 200:
-                return (f"Error: API request failed with status {response.status_code}",)
-            
-            result = response.json()
-            
-            status_text = f"Eigen AI FLUX API Model Status:\n"
-            status_text += f"Model Loaded: {'Yes' if result.get('model_loaded', False) else 'No'}\n"
-            status_text += f"Model Type: {result.get('model_type', 'Unknown')}\n"
-            status_text += f"Selected GPU: {result.get('selected_gpu', 'Unknown')}\n"
-            status_text += f"VRAM Usage: {result.get('vram_usage_gb', 'Unknown')} GB\n"
-            status_text += f"System Memory: {result.get('system_memory_used_gb', 'Unknown')}/{result.get('system_memory_total_gb', 'Unknown')} GB\n"
-            
-            lora_loaded = result.get('lora_loaded')
-            if lora_loaded:
-                status_text += f"LoRA Loaded: {lora_loaded} (weight: {result.get('lora_weight', 'Unknown')})"
-            else:
-                status_text += f"LoRA Loaded: None"
-            
-            return (status_text,)
-            
-        except Exception as e:
-            return (f"Error getting status: {str(e)}",)
+
 
 
 # Node class mappings
 NODE_CLASS_MAPPINGS = {
-    "FluxAPINode": FluxAPINode,
-    "FluxAPIModelStatusNode": FluxAPIModelStatusNode
+    "KontextAPINode": KontextAPINode
 }
 
 # Node display name mappings
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "FluxAPINode": "Eigen AI FLUX Schnell API Generator",
-    "FluxAPIModelStatusNode": "Eigen AI FLUX API Status"
+    "KontextAPINode": "Eigen AI FLUX Kontext API Generator"
 }

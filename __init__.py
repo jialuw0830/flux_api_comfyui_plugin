@@ -15,19 +15,22 @@ nodes_dir = os.path.join(os.path.dirname(__file__), "nodes")
 if os.path.exists(nodes_dir):
     sys.path.append(nodes_dir)
     
-    # Import the main node
+    # Import the main nodes
     try:
         from flux_api_node import FluxAPINode, FluxAPIModelStatusNode
+        from kontext_api_node import KontextAPINode
         
         # Register the nodes
         NODE_CLASS_MAPPINGS.update({
             "FluxAPINode": FluxAPINode,
-            "FluxAPIModelStatusNode": FluxAPIModelStatusNode
+            "FluxAPIModelStatusNode": FluxAPIModelStatusNode,
+            "KontextAPINode": KontextAPINode
         })
         
         NODE_DISPLAY_NAME_MAPPINGS.update({
-            "FluxAPINode": "Eigen AI FLUX API Generator",
-            "FluxAPIModelStatusNode": "Eigen AI FLUX API Status"
+            "FluxAPINode": "Eigen AI FLUX Schnell API Generator",
+            "FluxAPIModelStatusNode": "Eigen AI FLUX API Status",
+            "KontextAPINode": "Eigen AI FLUX Kontext API Generator"
         })
         
         print("Eigen AI FLUX API Plugin loaded successfully!")
@@ -45,7 +48,7 @@ else:
 # Plugin metadata
 __version__ = "1.0.0"
 __author__ = "Eigen AI"
-__description__ = "Eigen AI FLUX API integration for ComfyUI with LoRA support and large font prompt inputs"
+__description__ = "Eigen AI FLUX API integration for ComfyUI with LoRA support, large font prompt inputs, and Kontext image-to-image generation"
 __url__ = "https://github.com/eigenai/flux_api_plugin"
 
 # ComfyUI plugin requirements
@@ -63,7 +66,7 @@ def get_required_packages():
 def get_plugin_info():
     """Return plugin information for ComfyUI"""
     return {
-        "name": "Eigen AI FLUX API Plugin",
+        "name": "Eigen AI FLUX API",
         "version": __version__,
         "description": __description__,
         "author": __author__,
