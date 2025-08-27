@@ -2,7 +2,7 @@
   "nodes": [
     {
       "name": "FluxAPINode",
-      "display_name": "Eigen AI FLUX API Generator",
+      "display_name": "Eigen AI FLUX Schnell API Generator",
       "category": "Eigen AI FLUX API",
       "description": "Generate images using FLUX.1-schnell model with LoRA support and large font prompt inputs",
       "input_types": {
@@ -41,6 +41,39 @@
       },
       "output_types": {
         "status_info": "STRING"
+      }
+    },
+    {
+      "name": "KontextAPINode",
+      "display_name": "Eigen AI FLUX Kontext API Generator",
+      "category": "Eigen AI FLUX Kontext API",
+      "description": "Generate images using FLUX.1-Kontext-dev model for image-to-image generation with LoRA support",
+      "input_types": {
+        "required": {
+          "image": "IMAGE",
+          "prompt": "STRING",
+          "width": "INT",
+          "height": "INT",
+          "num_inference_steps": "INT",
+          "guidance_scale": "FLOAT",
+          "seed": "INT",
+          "negative_prompt": "STRING",
+          "upscale": "BOOLEAN",
+          "upscale_factor": "INT",
+          "api_url": "STRING",
+          "lora1_name": "STRING",
+          "lora1_weight": "FLOAT"
+        },
+        "optional": {
+          "lora2_name": "STRING",
+          "lora2_weight": "FLOAT",
+          "lora3_name": "STRING",
+          "lora3_weight": "FLOAT"
+        }
+      },
+      "output_types": {
+        "image": "IMAGE",
+        "generation_info": "STRING"
       }
     }
   ]
