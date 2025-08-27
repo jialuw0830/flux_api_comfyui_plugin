@@ -309,6 +309,7 @@ class KontextAPINode:
             # Parse response
             result = response.json()
             logger.info(f"API response received: {result.get('message', 'Success')}")
+            logger.info(f"Full API response result: {result}")
             
             # Get download URL from response
             download_url = result.get("download_url", "")
