@@ -159,8 +159,8 @@ class KontextAPINode:
             }
         }
     
-    RETURN_TYPES = ("IMAGE", "STRING")
-    RETURN_NAMES = ("image", "generation_info")
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
     FUNCTION = "generate_image"
     CATEGORY = "Eigen AI FLUX Kontext API"
     OUTPUT_NODE = False
@@ -191,7 +191,7 @@ class KontextAPINode:
             lora3_weight (float): Third LoRA weight (optional)
             
         Returns:
-            tuple: (image_tensor, generation_info)
+            image_tensor (IMAGE)
         """
         try:
             # Update API URL if provided
@@ -384,53 +384,13 @@ class KontextAPINode:
             # Verify tensor values
             logger.info(f"Tensor min value: {image_tensor.min().item()}, max value: {image_tensor.max().item()}")
             
-            # Prepare generation info
-            if 'image/' in content_type:
-                # Direct image response - use basic info
-                generation_info = {
-                    "message": "Image generated successfully (direct response)",
-                    "filename": f"generated_{int(time.time())}.png",
-                    "generation_time": "N/A (direct response)",
-                    "width": width,
-                    "height": height,
-                    "seed": seed
-                }
-                
-                info_text = f"Kontext Image Generated Successfully!\n"
-                info_text += f"Response Type: Direct Image\n"
-                info_text += f"Dimensions: {generation_info['width']}x{generation_info['height']}\n"
-                if generation_info['seed'] != -1:
-                    info_text += f"Seed: {generation_info['seed']}\n"
-                if len(loras_to_apply) > 0:
-                    info_text += f"LoRAs Applied: {len(loras_to_apply)}"
-                
-                logger.info(f"Kontext image generated successfully via direct response")
-            else:
-                # JSON response - use detailed info
-                generation_info = {
-                    "message": result.get("message", "Image generated successfully"),
-                    "filename": result.get("filename", ""),
-                    "generation_time": result.get("generation_time", ""),
-                    "width": result.get("width", width),
-                    "height": result.get("height", height),
-                    "seed": result.get("seed", seed)
-                }
-                
-                info_text = f"Kontext Image Generated Successfully!\n"
-                info_text += f"Filename: {generation_info['filename']}\n"
-                info_text += f"Generation Time: {generation_info['generation_time']}\n"
-                info_text += f"Dimensions: {generation_info['width']}x{generation_info['height']}\n"
-                if generation_info['seed'] != -1:
-                    info_text += f"Seed: {generation_info['seed']}\n"
-                if len(loras_to_apply) > 0:
-                    info_text += f"LoRAs Applied: {len(loras_to_apply)}"
-                
-                logger.info(f"Kontext image generated successfully: {generation_info['filename']}")
+            # Suppress generation-info output per user request
+            logger.info("Kontext image generated successfully (generation-info disabled)")
             
             # ComfyUI expects IMAGE type to be PyTorch tensor
             logger.info(f"Returning PyTorch tensor for ComfyUI: {image_tensor.shape}, {image_tensor.dtype}")
             
-            return (image_tensor, info_text)
+            return (image_tensor,)
             
         except Exception as e:
             error_msg = f"Error generating Kontext image: {str(e)}"
@@ -446,7 +406,7 @@ class KontextAPINode:
             # Convert to PyTorch tensor for ComfyUI compatibility
             placeholder_tensor = torch.from_numpy(placeholder)
             logger.info(f"Returning error placeholder tensor: {placeholder_tensor.shape}, {placeholder_tensor.dtype}")
-            return (placeholder_tensor, f"Error: {error_msg}")
+            return (placeholder_tensor,)
     
     @classmethod
     def IS_CHANGED(s, **kwargs):

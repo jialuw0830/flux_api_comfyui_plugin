@@ -137,8 +137,8 @@ class FluxAPINode:
             }
         }
     
-    RETURN_TYPES = ("IMAGE", "STRING")
-    RETURN_NAMES = ("image", "generation_info")
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("image",)
     FUNCTION = "generate_image"
     CATEGORY = "Eigen AI FLUX API"
     OUTPUT_NODE = False
@@ -166,7 +166,7 @@ class FluxAPINode:
             lora3_weight (float): Third LoRA weight (optional)
             
         Returns:
-            tuple: (image_tensor, generation_info)
+            image_tensor (IMAGE)
         """
         try:
             # Update API URL if provided
@@ -313,38 +313,14 @@ class FluxAPINode:
             logger.info(f"  - Value range: [{image_tensor.min().item():.3f}, {image_tensor.max().item():.3f}]")
             logger.info(f"  - Memory layout: {image_tensor.stride()}")
             
-            # Prepare generation info
-            generation_info = {
-                "message": result.get("message", "Image generated successfully"),
-                "filename": result.get("filename", ""),
-                "generation_time": result.get("generation_time", ""),
-                "vram_usage": result.get("vram_usage_gb", ""),
-                "model_type": result.get("model_type", ""),
-                "lora_applied": result.get("lora_applied", ""),
-                "lora_weight": result.get("lora_weight", ""),
-                "width": result.get("width", width),
-                "height": result.get("height", height),
-                "seed": result.get("seed", seed)
-            }
-            
-            info_text = f"Image Generated Successfully!\n"
-            info_text += f"Filename: {generation_info['filename']}\n"
-            info_text += f"Generation Time: {generation_info['generation_time']}\n"
-            info_text += f"VRAM Usage: {generation_info['vram_usage']}\n"
-            info_text += f"Model Type: {generation_info['model_type']}\n"
-            info_text += f"Dimensions: {generation_info['width']}x{generation_info['height']}\n"
-            if generation_info['seed'] != -1:
-                info_text += f"Seed: {generation_info['seed']}\n"
-            if generation_info['lora_applied']:
-                info_text += f"LoRA Applied: {generation_info['lora_applied']} (weight: {generation_info['lora_weight']})"
-            
-            logger.info(f"Image generated successfully: {generation_info['filename']}")
+            # Suppress generation-info output per user request
+            logger.info("Image generated successfully (generation-info disabled)")
             
             # ComfyUI expects IMAGE type to be PyTorch tensor
             # Save Image and Preview Image nodes will call .cpu().numpy() internally
             logger.info(f"Returning PyTorch tensor for ComfyUI: {image_tensor.shape}, {image_tensor.dtype}")
             
-            return (image_tensor, info_text)
+            return (image_tensor,)
             
         except Exception as e:
             error_msg = f"Error generating image: {str(e)}"
@@ -360,7 +336,7 @@ class FluxAPINode:
             # Convert to PyTorch tensor for ComfyUI compatibility
             placeholder_tensor = torch.from_numpy(placeholder)
             logger.info(f"Returning error placeholder tensor: {placeholder_tensor.shape}, {placeholder_tensor.dtype}")
-            return (placeholder_tensor, f"Error: {error_msg}")
+            return (placeholder_tensor,)
     
     @classmethod
     def IS_CHANGED(s, **kwargs):

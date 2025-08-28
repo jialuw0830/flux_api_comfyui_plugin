@@ -25,8 +25,7 @@
         }
       },
       "output_types": {
-        "image": "IMAGE",
-        "generation_info": "STRING"
+        "image": "IMAGE"
       }
     },
     {
@@ -58,8 +57,7 @@
         }
       },
       "output_types": {
-        "image": "IMAGE",
-        "generation_info": "STRING"
+        "image": "IMAGE"
       }
     }
   ]
