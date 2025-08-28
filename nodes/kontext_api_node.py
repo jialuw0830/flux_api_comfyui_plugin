@@ -43,7 +43,7 @@ class KontextAPINode:
     """
     
     def __init__(self):
-        self.api_base_url = "http://74.81.65.108:9001"
+        self.api_base_url = "http://74.81.65.108:9000"
         self.session = requests.Session()
         self.session.timeout = 300  # 5 minutes timeout for generation
         logger.info("Kontext API Node initialized")
@@ -115,7 +115,7 @@ class KontextAPINode:
                     "display": "dropdown"
                 }),
                 "api_url": ("STRING", {
-                    "default": "http://74.81.65.108:9001",
+                    "default": "http://74.81.65.108:9000",
                     "description": "FLUX Kontext API base URL"
                 }),
                 "lora1_name": ("STRING", {
@@ -195,7 +195,7 @@ class KontextAPINode:
         """
         try:
             # Update API URL if provided
-            if api_url and api_url != "http://74.81.65.108:9001":
+            if api_url and api_url != "http://74.81.65.108:9000":
                 self.api_base_url = api_url
             
             # Convert ComfyUI image tensor to PIL Image
