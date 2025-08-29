@@ -19,16 +19,19 @@ if os.path.exists(nodes_dir):
     try:
         from flux_api_node import FluxAPINode
         from kontext_api_node import KontextAPINode
+        from qwen_api_node import QwenAPINode
         
         # Register the nodes
         NODE_CLASS_MAPPINGS.update({
             "FluxAPINode": FluxAPINode,
-            "KontextAPINode": KontextAPINode
+            "KontextAPINode": KontextAPINode,
+            "QwenAPINode": QwenAPINode
         })
         
         NODE_DISPLAY_NAME_MAPPINGS.update({
             "FluxAPINode": "Eigen AI FLUX Schnell API Generator",
-            "KontextAPINode": "Eigen AI FLUX Kontext API Generator"
+            "KontextAPINode": "Eigen AI FLUX Kontext API Generator",
+            "QwenAPINode": "Eigen AI Qwen API Generator"
         })
         
         print("Eigen AI FLUX API Plugin loaded successfully!")
