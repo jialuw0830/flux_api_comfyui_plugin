@@ -39,12 +39,13 @@
           "prompt": "STRING",
           "width": "INT",
           "height": "INT",
-          "image_strength": "FLOAT",
-          "image_guidance": "FLOAT",
           "seed": "INT",
-
+          "inference_steps": "INT",
+          "guidance_scale": "FLOAT",
           "upscale": "BOOLEAN",
           "upscale_factor": "INT",
+          "enable_background_removal": "BOOLEAN",
+          "removal_strength": "FLOAT",
           "api_url": "STRING",
           "lora1_name": "STRING",
           "lora1_weight": "FLOAT"

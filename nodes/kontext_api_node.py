@@ -10,6 +10,7 @@ Key Features:
 - Flexible LoRA weight adjustment
 - Real-time status monitoring
 - Content upscaling functionality
+- Background removal functionality with adjustable strength
 """
 
 import json
@@ -79,28 +80,29 @@ class KontextAPINode:
                     "step": 64,
                     "display": "slider"
                 }),
-                "image_strength": ("FLOAT", {
-                    "default": 0.8,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "step": 0.1,
-                    "display": "slider",
-                    "description": "How much the uploaded image influences the generation (0.0 = none, 1.0 = strong)"
-                }),
-                "image_guidance": ("FLOAT", {
-                    "default": 1.5,
-                    "min": 0.1,
-                    "max": 10.0,
-                    "step": 0.1,
-                    "display": "slider",
-                    "description": "Guidance scale for image conditioning (higher = more faithful to image)"
-                }),
+
                 "seed": ("INT", {
                     "default": -1,
                     "min": -1,
                     "max": 2**32 - 1,
                     "step": 1,
                     "display": "number"
+                }),
+                "inference_steps": ("INT", {
+                    "default": 20,
+                    "min": 1,
+                    "max": 50,
+                    "step": 1,
+                    "display": "slider",
+                    "description": "Number of inference steps for generation"
+                }),
+                "guidance_scale": ("FLOAT", {
+                    "default": 7.5,
+                    "min": -10.0,
+                    "max": 10.0,
+                    "step": 0.5,
+                    "display": "slider",
+                    "description": "Guidance scale for text conditioning (negative values for negative guidance)"
                 }),
 
                 "upscale": ("BOOLEAN", {
@@ -113,6 +115,18 @@ class KontextAPINode:
                     "max": 4,
                     "step": 2,
                     "display": "dropdown"
+                }),
+                "enable_background_removal": ("BOOLEAN", {
+                    "default": False,
+                    "description": "Whether to enable background removal"
+                }),
+                "removal_strength": ("FLOAT", {
+                    "default": 0.5,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "step": 0.1,
+                    "display": "slider",
+                    "description": "Background removal strength (0.0 = gentle, 1.0 = aggressive)"
                 }),
                 "api_url": ("STRING", {
                     "default": "http://74.81.65.108:9000",
@@ -165,7 +179,7 @@ class KontextAPINode:
     CATEGORY = "Eigen AI FLUX Kontext API"
     OUTPUT_NODE = False
     
-    def generate_image(self, image, prompt, width, height, image_strength, image_guidance, seed, upscale, upscale_factor, api_url,
+    def generate_image(self, image, prompt, width, height, seed, inference_steps, guidance_scale, upscale, upscale_factor, enable_background_removal, removal_strength, api_url,
                       lora1_name="21j3h123/realEarthKontext", lora1_weight=1.0, 
                       lora2_name="none", lora2_weight=1.0, 
                       lora3_name="none", lora3_weight=1.0):
@@ -177,11 +191,13 @@ class KontextAPINode:
             prompt (str): Text prompt for generation
             width (int): Width
             height (int): Height
-            image_strength (float): How much the uploaded image influences the generation (0.0 = none, 1.0 = strong)
-            image_guidance (float): Guidance scale for image conditioning (higher = more faithful to image)
             seed (int): Random seed (-1 for random)
+            inference_steps (int): Number of inference steps for generation
+            guidance_scale (float): Guidance scale for text conditioning (negative values for negative guidance)
             upscale (bool): Whether to enable upscaling
             upscale_factor (int): Upscaling factor
+            enable_background_removal (bool): Whether to enable background removal
+            removal_strength (float): Background removal strength (0.0 = gentle, 1.0 = aggressive)
             api_url (str): FLUX Kontext API base URL
             lora1_name (str): First LoRA name (optional, has default)
             lora1_weight (float): First LoRA weight (optional, has default)
@@ -240,17 +256,21 @@ class KontextAPINode:
             
             data = {
                 'prompt': prompt,
-                'image_strength': image_strength,
-                'image_guidance': image_guidance,
                 'width': width,
                 'height': height,
                 'upscale': upscale,
-                'upscale_factor': upscale_factor
+                'upscale_factor': upscale_factor,
+                'enable_background_removal': enable_background_removal,
+                'removal_strength': removal_strength
             }
             
             # Add seed if specified
             if seed != -1:
                 data['seed'] = seed
+            
+            # Add inference steps and guidance scale
+            data['inference_steps'] = inference_steps
+            data['guidance_scale'] = guidance_scale
             
             # Add LoRA configuration
             loras_to_apply = []
