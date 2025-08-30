@@ -80,6 +80,13 @@ class FluxAPINode:
                     "step": 1,
                     "display": "number"
                 }),
+                "guidance_scale": ("FLOAT", {
+                    "default": 3.5,
+                    "min": -10.0,
+                    "max": 10.0,
+                    "step": 0.1,
+                    "display": "slider"
+                }),
                 "upscale": ("BOOLEAN", {
                     "default": False,
                     "description": "Whether to upscale the generated image"
@@ -143,7 +150,7 @@ class FluxAPINode:
     CATEGORY = "Eigen AI FLUX API"
     OUTPUT_NODE = False
     
-    def generate_image(self, prompt, width, height, seed, upscale, upscale_factor, api_url,
+    def generate_image(self, prompt, width, height, seed, guidance_scale, upscale, upscale_factor, api_url,
                       lora1_name="/data/weights/lora_checkpoints/Studio_Ghibli_Flux.safetensors", lora1_weight=1.0, 
                       lora2_name="none", lora2_weight=1.0, 
                       lora3_name="none", lora3_weight=1.0):
@@ -178,6 +185,7 @@ class FluxAPINode:
                 "prompt": prompt,
                 "width": width,
                 "height": height,
+                "guidance_scale": guidance_scale,
                 "upscale": upscale,
                 "upscale_factor": upscale_factor
             }
