@@ -49,7 +49,7 @@ class EigenAIQwenGeneratorNode:
         """
         return {
             "required": {
-                "prompt": ("STRING", {
+                "prompt": ("PROMPT", {
                     "description": "Text prompt from text node (connect from EigenAIFluxTextNode)"
                 }),
                 "lora_config": ("LORA_CONFIG", {

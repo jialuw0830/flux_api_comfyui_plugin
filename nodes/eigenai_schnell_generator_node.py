@@ -49,7 +49,7 @@ class EigenAISchnellGeneratorNode:
         """
         return {
             "required": {
-                "prompt": ("STRING", {
+                "prompt": ("PROMPT", {
                     "description": "Text prompt from text node (connect from EigenAIFluxTextNode)",
                     "default": "",
                     "multiline": False

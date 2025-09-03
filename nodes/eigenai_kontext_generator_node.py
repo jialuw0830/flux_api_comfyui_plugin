@@ -55,7 +55,7 @@ class EigenAIKontextGeneratorNode:
                 "image": ("IMAGE", {
                     "description": "Input image for image-to-image generation"
                 }),
-                "prompt": ("STRING", {
+                "prompt": ("PROMPT", {
                     "description": "Text prompt from text node (connect from EigenAIFluxTextNode)"
                 }),
                 "lora_config": ("LORA_CONFIG", {
