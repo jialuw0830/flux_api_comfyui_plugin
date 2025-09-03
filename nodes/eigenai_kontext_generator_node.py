@@ -117,6 +117,18 @@ class EigenAIKontextGeneratorNode:
                     "step": 0.1,
                     "display": "slider",
                     "description": "Background removal strength"
+                }),
+                "upscale": ("BOOLEAN", {
+                    "default": False,
+                    "description": "Enable upscaling via FLUX API"
+                }),
+                "upscale_factor": ("INT", {
+                    "default": 2,
+                    "min": 2,
+                    "max": 4,
+                    "step": 1,
+                    "display": "slider",
+                    "description": "Upscaling factor for FLUX API (2x, 3x, 4x)"
                 })
             }
         }
@@ -129,7 +141,7 @@ class EigenAIKontextGeneratorNode:
     
     def generate_image(self, image, prompt, lora_config, width, height, 
                       seed, inference_steps, guidance_scale, api_url,
-                      background_removal, background_removal_strength):
+                      background_removal, background_removal_strength, upscale, upscale_factor):
         """
         Generate image using Eigen AI FLUX Kontext API
         
@@ -145,6 +157,8 @@ class EigenAIKontextGeneratorNode:
             api_url (str): API base URL
             background_removal (bool): Whether to enable background removal
             background_removal_strength (float): Background removal strength
+            upscale (bool): Whether to enable upscaling via FLUX API
+            upscale_factor (int): Upscaling factor for FLUX API
             
         Returns:
             image_tensor (IMAGE)

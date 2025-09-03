@@ -48,7 +48,7 @@ class EigenAITextNode:
             }
         }
     
-    RETURN_TYPES = ("STRING",)
+    RETURN_TYPES = ("PROMPT",)
     RETURN_NAMES = ("prompt",)
     FUNCTION = "process_text"
     CATEGORY = "Eigen AI Modular"
