@@ -90,46 +90,84 @@ python main.py
 
 ## 🔧 Node Descriptions
 
-### 1. Eigen AI FLUX API Generator
 
-Main generation node supporting:
+### 1. **Text Node** (`EigenAITextNode`)
+**Purpose**: Text prompt processing and formatting
+**Input**: Text prompt
+**Output**: Processed prompt (PROMPT type)
+**Usage**: 
+- Add text prompt in the textarea
+- Connect output to any generator node
+- Supports multiline text up to 2000 characters
 
-* Up to **3 LoRAs**
-* **Seed control** for reproducibility
-* **2× / 4× upscaling**
+### 2. **LoRA Node** (`EigenAILoraNode`)
+**Purpose**: LoRA model configuration and management
+**Input**: LoRA file paths and weights
+**Output**: LoRA configuration (LORA_CONFIG type)
+**Usage**:
+- Set up to 3 LoRA models simultaneously
+- Configure LoRA weights (0.0 to 2.0)
+- Connect to generator nodes for LoRA-enhanced generation
 
-### 2. Eigen AI FLUX API Status
+### 3. **Qwen Generator** (`EigenAIQwenGeneratorNode`)
+**Purpose**: Image generation using Qwen-compatible model
+**Input**: Prompt + LoRA config + generation parameters
+**Output**: Generated image
+**Usage**:
+- Connect prompt from Text Node
+- Connect LoRA config from LoRA Node
+- Adjust width, height, guidance scale, and seed
+- Default API: http://74.81.65.108:8010
 
-Monitors **API status** and **system resources**
+### 4. **Schnell Generator** (`EigenAISchnellGeneratorNode`)
+**Purpose**: Fast image generation using Schnell model
+**Input**: Prompt + LoRA config + generation parameters
+**Output**: Generated image
+**Usage**:
+- Similar to Qwen Generator but optimized for speed
+- Ideal for batch processing
+- Same parameter controls as Qwen Generator
+
+### 5. **Kontext Generator** (`EigenAIKontextGeneratorNode`)
+**Purpose**: Image-to-image generation using Kontext model
+**Input**: Input image + Prompt + LoRA config + parameters
+**Output**: Generated image
+**Usage**:
+- Upload or connect an input image
+- Add text prompt for guidance
+- Connect LoRA config for style enhancement
+- Adjust generation parameters as needed
+
+### 6. **Upscaler** (`EigenAIUpscalerNode`)
+**Purpose**: Image upscaling and enhancement
+**Input**: Image + upscaling parameters
+**Output**: Upscaled image
+**Usage**:
+- Connect input image from generator nodes
+- Choose upscaling factor (2x or 4x)
+- Apply ESRGAN upscaling for better quality
 
 ---
 
-## 📝 Usage Examples
+## 🔄 Basic Workflows
 
-### Basic Workflow
-
+### Standard Workflow
 ```
-FluxPromptNode → FluxAPINode → Output
+Text Node → LoRA Node → Generator Node → Upscaler → Output
 ```
 
-### Prompt Example
-
+### Quick Workflow (Built-in LoRA)
 ```
-A beautiful landscape painting in Studio Ghibli style, 
-featuring rolling hills, cherry blossoms, and a peaceful atmosphere, 
-soft lighting, detailed textures
+Text Node → Generator Node → Output
+```
+
+### Image-to-Image Workflow
+```
+Input Image → Kontext Generator → Upscaler → Output
 ```
 
 ---
 
-## 🔗 API Configuration
-
-* **Default API URL**:
-
-  ```
-  http://74.81.65.108:8000
-  ```
-* API URL can be customized in **node parameters**.
 
 ---
 
