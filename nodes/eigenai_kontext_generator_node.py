@@ -24,7 +24,7 @@ import base64
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class EigenAIFluxKontextNode:
+class EigenAIKontextGeneratorNode:
     """
     ComfyUI Eigen AI FLUX Kontext Image-to-Image Generation Node
     
@@ -56,11 +56,7 @@ class EigenAIFluxKontextNode:
                     "description": "Input image for image-to-image generation"
                 }),
                 "prompt": ("STRING", {
-                    "default": "A beautiful landscape painting in Studio Ghibli style",
-                    "description": "Text prompt from text node",
-                    "multiline": True,
-                    "max_length": 2000,
-                    "display": "textarea"
+                    "description": "Text prompt from text node (connect from EigenAIFluxTextNode)"
                 }),
                 "lora_config": ("LORA_CONFIG", {
                     "description": "LoRA configuration from LoRA node"
@@ -109,18 +105,7 @@ class EigenAIFluxKontextNode:
                     "default": "http://74.81.65.108:9000",
                     "description": "Eigen AI FLUX Kontext API base URL"
                 }),
-                "upscale": ("BOOLEAN", {
-                    "default": False,
-                    "description": "Whether to upscale the generated image"
-                }),
-                "upscale_factor": ("INT", {
-                    "default": 2,
-                    "min": 2,
-                    "max": 4,
-                    "step": 2,
-                    "display": "dropdown",
-                    "description": "Upscaling factor"
-                }),
+
                 "background_removal": ("BOOLEAN", {
                     "default": False,
                     "description": "Enable background removal"
@@ -139,7 +124,7 @@ class EigenAIFluxKontextNode:
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("image",)
     FUNCTION = "generate_image"
-    CATEGORY = "Eigen AI FLUX"
+    CATEGORY = "Eigen AI Modular"
     OUTPUT_NODE = False
     
     def generate_image(self, image, prompt, lora_config, width, height, 

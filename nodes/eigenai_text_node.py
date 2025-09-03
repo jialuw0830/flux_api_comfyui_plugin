@@ -15,7 +15,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class EigenAIFluxTextNode:
+class EigenAITextNode:
     """
     ComfyUI Eigen AI FLUX Text Processing Node
     
@@ -40,23 +40,9 @@ class EigenAIFluxTextNode:
             "required": {
                 "prompt": ("STRING", {
                     "default": "A beautiful landscape painting in Studio Ghibli style",
-                    "description": "Main text prompt for generation",
+                    "description": "Text prompt for generation",
                     "multiline": True,
                     "max_length": 2000,
-                    "display": "textarea"
-                }),
-                "style_modifier": ("STRING", {
-                    "default": "",
-                    "description": "Additional style modifiers (optional)",
-                    "multiline": True,
-                    "max_length": 1000,
-                    "display": "textarea"
-                }),
-                "quality_tags": ("STRING", {
-                    "default": "masterpiece, best quality, highly detailed",
-                    "description": "Quality enhancement tags",
-                    "multiline": True,
-                    "max_length": 500,
                     "display": "textarea"
                 })
             }
@@ -65,36 +51,22 @@ class EigenAIFluxTextNode:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("prompt",)
     FUNCTION = "process_text"
-    CATEGORY = "Eigen AI FLUX"
+    CATEGORY = "Eigen AI Modular"
     OUTPUT_NODE = False
     
-    def process_text(self, prompt, style_modifier, quality_tags):
+    def process_text(self, prompt):
         """
-        Process and combine text inputs for FLUX API
+        Process text prompt for FLUX API
         
         Args:
-            prompt (str): Main text prompt
-            style_modifier (str): Style modifiers
-            quality_tags (str): Quality enhancement tags
+            prompt (str): Text prompt for generation
             
         Returns:
-            str: Combined prompt
+            str: Processed prompt
         """
         try:
-            # Combine main prompt with style modifier
-            combined_prompt = prompt.strip()
-            if style_modifier and style_modifier.strip():
-                combined_prompt += f", {style_modifier.strip()}"
-            
-            # Add quality tags
-            if quality_tags and quality_tags.strip():
-                combined_prompt += f", {quality_tags.strip()}"
-            
-            # Clean up the final prompt
-            final_prompt = combined_prompt.strip()
-            if final_prompt.endswith(","):
-                final_prompt = final_prompt[:-1]
-            
+            # Simply return the prompt as is
+            final_prompt = prompt.strip()
             logger.info(f"Processed prompt: {final_prompt}")
             
             return (final_prompt,)
@@ -111,4 +83,4 @@ class EigenAIFluxTextNode:
         """
         Force re-execution when text parameters change
         """
-        return f"{kwargs.get('prompt', '')}_{kwargs.get('style_modifier', '')}_{kwargs.get('quality_tags', '')}"
+        return f"{kwargs.get('prompt', '')}"

@@ -22,7 +22,7 @@ import torch
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class EigenAIFluxQwenNode:
+class EigenAIQwenGeneratorNode:
     """
     ComfyUI Eigen AI FLUX Qwen-compatible Image Generation Node
     
@@ -50,11 +50,7 @@ class EigenAIFluxQwenNode:
         return {
             "required": {
                 "prompt": ("STRING", {
-                    "default": "A beautiful landscape with mountains and a lake",
-                    "description": "Text prompt from text node",
-                    "multiline": True,
-                    "max_length": 2000,
-                    "display": "textarea"
+                    "description": "Text prompt from text node (connect from EigenAIFluxTextNode)"
                 }),
                 "lora_config": ("LORA_CONFIG", {
                     "description": "LoRA configuration from LoRA node"
@@ -95,25 +91,14 @@ class EigenAIFluxQwenNode:
                     "default": "http://74.81.65.108:8010",
                     "description": "Qwen-compatible image API base URL"
                 }),
-                "upscale": ("BOOLEAN", {
-                    "default": False,
-                    "description": "Enable Remacri ESRGAN upscaling"
-                }),
-                "upscale_factor": ("INT", {
-                    "default": 2,
-                    "min": 2,
-                    "max": 4,
-                    "step": 2,
-                    "display": "dropdown",
-                    "description": "Upscaling factor"
-                })
+
             }
         }
     
     RETURN_TYPES = ("IMAGE",)
     RETURN_NAMES = ("image",)
     FUNCTION = "generate_image"
-    CATEGORY = "Eigen AI FLUX"
+    CATEGORY = "Eigen AI Modular"
     OUTPUT_NODE = False
     
     def generate_image(self, prompt, lora_config, width, height, 

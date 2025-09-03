@@ -15,7 +15,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class EigenAIFluxLoraNode:
+class EigenAILoraNode:
     """
     ComfyUI Eigen AI FLUX LoRA Management Node
     
@@ -85,7 +85,7 @@ class EigenAIFluxLoraNode:
     RETURN_TYPES = ("LORA_CONFIG",)
     RETURN_NAMES = ("lora_config",)
     FUNCTION = "process_loras"
-    CATEGORY = "Eigen AI FLUX"
+    CATEGORY = "Eigen AI Modular"
     OUTPUT_NODE = False
     
     def process_loras(self, lora1_name, lora1_weight, lora2_name="", lora2_weight=1.0, lora3_name="", lora3_weight=1.0):

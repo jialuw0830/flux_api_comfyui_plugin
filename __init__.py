@@ -1,19 +1,16 @@
 """
-ComfyUI Eigen AI FLUX API Plugin
-This plugin provides nodes for integrating with Eigen AI FLUX API
+ComfyUI Plugin for Eigen AI FLUX API Integration
+This plugin provides both unified and modular nodes for FLUX API
 
 Features:
-- Text processing and prompt management
-- LoRA loading and weight management
-- Text-to-image generation
-- Image-to-image generation (Kontext)
-- Qwen-compatible image generation
+- Unified nodes: Direct API integration
+- Modular nodes: Separated functionality for better workflow control
 """
 
 import os
 import sys
 
-# Add the nodes directory to Python path
+# Initialize node mappings
 NODE_CLASS_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS = {}
 
@@ -21,42 +18,74 @@ NODE_DISPLAY_NAME_MAPPINGS = {}
 nodes_dir = os.path.join(os.path.dirname(__file__), "nodes")
 if os.path.exists(nodes_dir):
     sys.path.append(nodes_dir)
-    
-    # Import the main nodes
+    # Import the main unified nodes (only from nodes root, no subfolders)
     try:
-        from flux_api_node import FluxAPINode
-        from kontext_api_node import KontextAPINode
-        from qwen_api_node import QwenAPINode
+        from eigenai_schnell_node import EigenAISchnellNode
+        from eigenai_kontext_node import EigenAIKontextNode
+        from eigenai_qwen_node import EigenAIQwenNode
         
-        # Register the nodes
+        # Register the main unified nodes
         NODE_CLASS_MAPPINGS.update({
-            "FluxAPINode": FluxAPINode,
-            "KontextAPINode": KontextAPINode,
-            "QwenAPINode": QwenAPINode
+            "EigenAISchnellNode": EigenAISchnellNode,
+            "EigenAIKontextNode": EigenAIKontextNode,
+            "EigenAIQwenNode": EigenAIQwenNode
         })
         
         NODE_DISPLAY_NAME_MAPPINGS.update({
-            "FluxAPINode": "Eigen AI FLUX Schnell API Generator",
-            "KontextAPINode": "Eigen AI FLUX Kontext API Generator",
-            "QwenAPINode": "Eigen AI Qwen API Generator"
+            "EigenAISchnellNode": "Eigen AI Schnell Generator",
+            "EigenAIKontextNode": "Eigen AI Kontext Generator",
+            "EigenAIQwenNode": "Eigen AI Qwen Generator"
         })
         
-        print("Eigen AI FLUX API Plugin loaded successfully!")
-        print(f"   - Loaded {len(NODE_CLASS_MAPPINGS)} nodes")
+        print("Eigen AI Unified API Plugin loaded successfully!")
+        print(f"   - Loaded {len(NODE_CLASS_MAPPINGS)} unified nodes")
         print(f"   - Available nodes: {list(NODE_DISPLAY_NAME_MAPPINGS.values())}")
+        
+    except ImportError as e:
+        print(f"Failed to load main unified API nodes: {e}")
+    
+    # Import the new modular nodes (only from nodes root, no subfolders)
+    try:
+        from eigenai_text_node import EigenAITextNode
+        from eigenai_lora_node import EigenAILoraNode
+        from eigenai_schnell_generator_node import EigenAISchnellGeneratorNode
+        from eigenai_kontext_generator_node import EigenAIKontextGeneratorNode
+        from eigenai_qwen_generator_node import EigenAIQwenGeneratorNode
+        from eigenai_upscaler_node import EigenAIUpscalerNode
+        
+        # Register the new modular nodes
+        NODE_CLASS_MAPPINGS.update({
+            "EigenAITextNode": EigenAITextNode,
+            "EigenAILoraNode": EigenAILoraNode,
+            "EigenAISchnellGeneratorNode": EigenAISchnellGeneratorNode,
+            "EigenAIKontextGeneratorNode": EigenAIKontextGeneratorNode,
+            "EigenAIQwenGeneratorNode": EigenAIQwenGeneratorNode,
+            "EigenAIUpscalerNode": EigenAIUpscalerNode
+        })
+        
+        NODE_DISPLAY_NAME_MAPPINGS.update({
+            "EigenAITextNode": "EigenAI Text Processor",
+            "EigenAILoraNode": "EigenAI LoRA Manager",
+            "EigenAISchnellGeneratorNode": "EigenAI Schnell Generator",
+            "EigenAIKontextGeneratorNode": "EigenAI Kontext Generator",
+            "EigenAIQwenGeneratorNode": "EigenAI Qwen Generator",
+            "EigenAIUpscalerNode": "EigenAI Upscaler"
+        })
+        
+        print(f"   - Loaded {len(NODE_CLASS_MAPPINGS)} total nodes (including modular nodes)")
+        print(f"   - All available nodes: {list(NODE_DISPLAY_NAME_MAPPINGS.values())}")
         print("Websocket connected")
         
     except ImportError as e:
-        print(f"Failed to load FLUX API Plugin: {e}")
-        print("   Please check that all dependencies are installed:")
-        print("   pip install requests pillow numpy torch")
+        print(f"Failed to load modular API nodes: {e}")
+        print("   Please check that all modular node files are present in the nodes directory")
 else:
-    print("FLUX API Plugin: nodes directory not found")
+    print("Eigen AI API Plugin: nodes directory not found")
 
 # Plugin metadata
 __version__ = "2.0.0"
 __author__ = "Eigen AI"
-__description__ = "Modular FLUX API integration for ComfyUI"
+__description__ = "Modular Eigen AI API integration for ComfyUI"
 __url__ = "https://github.com/eigenai/flux_api_plugin"
 
 # ComfyUI plugin requirements
@@ -74,7 +103,7 @@ def get_required_packages():
 def get_plugin_info():
     """Return plugin information for ComfyUI"""
     return {
-        "name": "Eigen AI FLUX API",
+        "name": "Eigen AI API",
         "version": __version__,
         "description": __description__,
         "author": __author__,

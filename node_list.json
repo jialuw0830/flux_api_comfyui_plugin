@@ -1,9 +1,124 @@
 {
   "nodes": [
     {
-      "name": "FluxAPINode",
-      "display_name": "Eigen AI FLUX Schnell API Generator",
-      "category": "Eigen AI API",
+      "name": "EigenAITextNode",
+      "display_name": "EigenAI Text Processor",
+      "category": "Eigen AI Modular",
+      "description": "Process and prepare text prompts for image generation",
+      "input_types": {
+        "required": {
+          "prompt": "STRING"
+        }
+      },
+      "output_types": {
+        "prompt": "STRING"
+      }
+    },
+    {
+      "name": "EigenAILoraNode",
+      "display_name": "EigenAI LoRA Manager",
+      "category": "Eigen AI Modular",
+      "description": "Manage LoRA loading and weight configuration for image generation",
+      "input_types": {
+        "required": {
+          "lora1_name": "STRING",
+          "lora1_weight": "FLOAT"
+        },
+        "optional": {
+          "lora2_name": "STRING",
+          "lora2_weight": "FLOAT",
+          "lora3_name": "STRING",
+          "lora3_weight": "FLOAT"
+        }
+      },
+      "output_types": {
+        "lora_config": "LORA_CONFIG"
+      }
+    },
+    {
+      "name": "EigenAISchnellGeneratorNode",
+      "display_name": "EigenAI Schnell Generator",
+      "category": "Eigen AI Modular",
+      "description": "Generate images using Schnell API with inputs from text and LoRA nodes",
+      "input_types": {
+        "required": {
+          "prompt": "STRING",
+          "lora_config": "LORA_CONFIG",
+          "width": "INT",
+          "height": "INT",
+          "seed": "INT",
+          "guidance_scale": "FLOAT",
+          "api_url": "STRING"
+        }
+      },
+      "output_types": {
+        "image": "IMAGE"
+      }
+    },
+    {
+      "name": "EigenAIKontextGeneratorNode",
+      "display_name": "EigenAI Kontext Generator",
+      "category": "Eigen AI Modular",
+      "description": "Generate images using Kontext model for image-to-image generation",
+      "input_types": {
+        "required": {
+          "image": "IMAGE",
+          "prompt": "STRING",
+          "lora_config": "LORA_CONFIG",
+          "width": "INT",
+          "height": "INT",
+          "seed": "INT",
+          "inference_steps": "INT",
+          "guidance_scale": "FLOAT",
+          "api_url": "STRING",
+          "background_removal": "BOOLEAN",
+          "background_removal_strength": "FLOAT"
+        }
+      },
+      "output_types": {
+        "image": "IMAGE"
+      }
+    },
+    {
+      "name": "EigenAIQwenGeneratorNode",
+      "display_name": "EigenAI Qwen Generator",
+      "category": "Eigen AI Modular",
+      "description": "Generate images using Qwen-compatible API with inputs from text and LoRA nodes",
+      "input_types": {
+        "required": {
+          "prompt": "STRING",
+          "lora_config": "LORA_CONFIG",
+          "width": "INT",
+          "height": "INT",
+          "guidance_scale": "FLOAT",
+          "seed": "INT",
+          "api_url": "STRING"
+        }
+      },
+      "output_types": {
+        "image": "IMAGE"
+      }
+    },
+    {
+      "name": "EigenAIUpscalerNode",
+      "display_name": "EigenAI Upscaler",
+      "category": "Eigen AI Modular",
+      "description": "Upscale images with various methods and factors",
+      "input_types": {
+        "required": {
+          "image": "IMAGE",
+          "upscale_factor": "INT",
+          "upscale_method": "STRING"
+        }
+      },
+      "output_types": {
+        "image": "IMAGE"
+      }
+    },
+    {
+      "name": "EigenAISchnellNode",
+      "display_name": "Eigen AI Schnell Generator",
+      "category": "Eigen AI Unified",
       "description": "Generate images using FLUX.1-schnell model with LoRA support and large font prompt inputs",
       "input_types": {
         "required": {
@@ -29,9 +144,9 @@
       }
     },
     {
-      "name": "KontextAPINode",
-      "display_name": "Eigen AI FLUX Kontext API Generator",
-      "category": "Eigen AI API",
+      "name": "EigenAIKontextNode",
+      "display_name": "Eigen AI Kontext Generator",
+      "category": "Eigen AI Unified",
       "description": "Generate images using FLUX.1-Kontext-dev model for image-to-image generation with LoRA support",
       "input_types": {
         "required": {
@@ -62,9 +177,9 @@
       }
     },
     {
-      "name": "QwenAPINode",
-      "display_name": "Eigen AI Qwen API Generator",
-      "category": "Eigen AI API",
+      "name": "EigenAIQwenNode",
+      "display_name": "Eigen AI Qwen Generator",
+      "category": "Eigen AI Unified",
       "description": "Generate images using Qwen-compatible image API with LoRA support and guidance scale control",
       "input_types": {
         "required": {
