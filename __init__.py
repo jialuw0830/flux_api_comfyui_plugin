@@ -1,6 +1,13 @@
 """
-FLUX API Plugin for ComfyUI
-A plugin that integrates FLUX.1-schnell model with LoRA support into ComfyUI
+ComfyUI Eigen AI FLUX API Plugin
+This plugin provides nodes for integrating with Eigen AI FLUX API
+
+Features:
+- Text processing and prompt management
+- LoRA loading and weight management
+- Text-to-image generation
+- Image-to-image generation (Kontext)
+- Qwen-compatible image generation
 """
 
 import os
@@ -47,9 +54,9 @@ else:
     print("FLUX API Plugin: nodes directory not found")
 
 # Plugin metadata
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __author__ = "Eigen AI"
-__description__ = "Eigen AI FLUX API integration for ComfyUI with LoRA support, large font prompt inputs, and Kontext image-to-image generation"
+__description__ = "Modular FLUX API integration for ComfyUI"
 __url__ = "https://github.com/eigenai/flux_api_plugin"
 
 # ComfyUI plugin requirements
