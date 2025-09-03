@@ -102,7 +102,7 @@ class EigenAIQwenGeneratorNode:
     OUTPUT_NODE = False
     
     def generate_image(self, prompt, lora_config, width, height, 
-                      guidance_scale, seed, api_url, upscale, upscale_factor):
+                      guidance_scale, seed, api_url):
         """
         Generate image using Qwen-compatible API
         
@@ -114,8 +114,6 @@ class EigenAIQwenGeneratorNode:
             guidance_scale (float): Guidance scale
             seed (int): Random seed (-1 for random)
             api_url (str): API base URL
-            upscale (bool): Whether to enable upscaling
-            upscale_factor (int): Upscaling factor
             
         Returns:
             image_tensor (IMAGE)
@@ -130,9 +128,7 @@ class EigenAIQwenGeneratorNode:
                 "prompt": prompt,
                 "width": width,
                 "height": height,
-                "guidance_scale": guidance_scale,
-                "upscale": upscale,
-                "upscale_factor": upscale_factor
+                "guidance_scale": guidance_scale
             }
             
             # Add seed if specified
