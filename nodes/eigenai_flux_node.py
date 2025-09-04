@@ -25,7 +25,7 @@ import torch
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class EigenAISchnellNode:
+class EigenAIFluxNode:
     """
     ComfyUI Eigen AI FLUX API Integration Node
     
@@ -357,10 +357,10 @@ class EigenAISchnellNode:
 
 # Node class mappings
 NODE_CLASS_MAPPINGS = {
-    "EigenAISchnellNode": EigenAISchnellNode
+    "EigenAIFluxNode": EigenAIFluxNode
 }
 
 # Node display name mappings
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "EigenAISchnellNode": "Eigen AI FLUX Schnell API Generator"
+    "EigenAIFluxNode": "Eigen AI FLUX API Generator"
 }

@@ -37,7 +37,7 @@ class EigenAIQwenGeneratorNode:
     """
     
     def __init__(self):
-        self.api_base_url = "http://74.81.65.108:8010"
+        self.api_base_url = "http://74.81.65.108:8000"
         self.session = requests.Session()
         self.session.timeout = 300  # 5 minutes timeout for generation
         logger.info("EigenAI FLUX Qwen Node initialized")
@@ -88,7 +88,7 @@ class EigenAIQwenGeneratorNode:
                     "description": "Random seed (-1 for random)"
                 }),
                 "api_url": ("STRING", {
-                    "default": "http://74.81.65.108:8010",
+                    "default": "http://74.81.65.108:8000",
                     "description": "Qwen-compatible image API base URL"
                 }),
 
@@ -120,7 +120,7 @@ class EigenAIQwenGeneratorNode:
         """
         try:
             # Update API URL if provided
-            if api_url and api_url != "http://74.81.65.108:8010":
+            if api_url and api_url != "http://74.81.65.108:8000":
                 self.api_base_url = api_url
             
             # Prepare request payload

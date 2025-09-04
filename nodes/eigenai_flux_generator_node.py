@@ -22,7 +22,7 @@ import torch
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class EigenAISchnellGeneratorNode:
+class EigenAIFluxGeneratorNode:
     """
     ComfyUI Eigen AI FLUX Image Generation Node
     

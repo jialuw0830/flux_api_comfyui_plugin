@@ -62,19 +62,9 @@ class EigenAIKontextNode:
                 "prompt": ("STRING", {
                     "description": "Text prompt from text node (connect from EigenAITextNode)"
                 }),
-                "width": ("INT", {
-                    "default": 512,
-                    "min": 256,
-                    "max": 1024,
-                    "step": 64,
-                    "display": "slider"
-                }),
-                "height": ("INT", {
-                    "default": 512,
-                    "min": 256,
-                    "max": 1024,
-                    "step": 64,
-                    "display": "slider"
+                "auto_downscale_large_images": ("BOOLEAN", {
+                    "default": True,
+                    "description": "Auto-downscale large images (>512px) by half before processing"
                 }),
 
                 "seed": ("INT", {
@@ -175,7 +165,7 @@ class EigenAIKontextNode:
     CATEGORY = "Eigen AI FLUX API"
     OUTPUT_NODE = False
     
-    def generate_image(self, image, prompt, width, height, seed, inference_steps, guidance_scale, upscale, upscale_factor, enable_background_removal, removal_strength, api_url,
+    def generate_image(self, image, prompt, auto_downscale_large_images, seed, inference_steps, guidance_scale, upscale, upscale_factor, enable_background_removal, removal_strength, api_url,
                       lora1_name="21j3h123/realEarthKontext", lora1_weight=1.0, 
                       lora2_name="none", lora2_weight=1.0, 
                       lora3_name="none", lora3_weight=1.0):
@@ -185,8 +175,7 @@ class EigenAIKontextNode:
         Args:
             image: Input image tensor from ComfyUI
             prompt (str): Text prompt for generation
-            width (int): Width
-            height (int): Height
+            auto_downscale_large_images (bool): Auto downscale if either dimension > 512
             seed (int): Random seed (-1 for random)
             inference_steps (int): Number of inference steps for generation
             guidance_scale (float): Guidance scale for text conditioning (negative values for negative guidance)
@@ -235,10 +224,16 @@ class EigenAIKontextNode:
                 pil_image = pil_image.convert("RGB")
                 logger.info(f"Converted image to RGB mode")
             
-            # Resize image to requested dimensions if needed
-            if pil_image.size != (width, height):
-                pil_image = pil_image.resize((width, height), Image.Resampling.LANCZOS)
-                logger.info(f"Resized image to {width}x{height}")
+            # Auto-downscale large images if enabled
+            try:
+                if auto_downscale_large_images:
+                    ow, oh = pil_image.size
+                    if ow > 512 or oh > 512:
+                        nw, nh = max(1, ow // 2), max(1, oh // 2)
+                        logger.info(f"Auto-downscaling from {(ow, oh)} to {(nw, nh)}")
+                        pil_image = pil_image.resize((nw, nh), Image.Resampling.LANCZOS)
+            except Exception as resize_e:
+                logger.warning(f"Auto-downscale skipped due to error: {resize_e}")
             
             # Convert PIL image to bytes for API request
             img_byte_arr = io.BytesIO()
@@ -250,10 +245,12 @@ class EigenAIKontextNode:
                 'image': ('input_image.png', img_byte_arr, 'image/png')
             }
             
+            # Use processed image size for width/height
+            pw, ph = pil_image.size
             data = {
                 'prompt': prompt,
-                'width': width,
-                'height': height,
+                'width': pw,
+                'height': ph,
                 'upscale': upscale,
                 'upscale_factor': upscale_factor,
                 'enable_background_removal': enable_background_removal,
@@ -412,9 +409,16 @@ class EigenAIKontextNode:
             error_msg = f"Error generating Kontext image: {str(e)}"
             logger.error(error_msg)
             
-            # Return a placeholder image and error info
-            # ComfyUI expects PyTorch tensor
-            placeholder = np.zeros((height, width, 3), dtype=np.float32)
+            # Infer placeholder size from input image if possible
+            ph, pw = 512, 512
+            try:
+                if isinstance(image, torch.Tensor) and len(image.shape) == 4:
+                    ph, pw = int(image.shape[1]), int(image.shape[2])
+                elif isinstance(image, Image.Image):
+                    pw, ph = image.size
+            except Exception:
+                pass
+            placeholder = np.zeros((ph, pw, 3), dtype=np.float32)
             placeholder[:, :, 0] = 0.8  # Light red for error
             # Add batch dimension for ComfyUI compatibility
             placeholder = np.expand_dims(placeholder, 0)
@@ -429,9 +433,9 @@ class EigenAIKontextNode:
         """
         Force re-execution when key parameters change
         """
-        # Always regenerate when prompt, dimensions, or LoRA settings change
+        # Always regenerate when prompt or LoRA settings change (no explicit dimensions)
         lora_hash = f"{kwargs.get('lora1_name', '21j3h123/realEarthKontext')}_{kwargs.get('lora1_weight', 1.0)}_{kwargs.get('lora2_name', 'none')}_{kwargs.get('lora2_weight', 1.0)}_{kwargs.get('lora3_name', 'none')}_{kwargs.get('lora3_weight', 1.0)}"
-        return f"{kwargs.get('prompt', '')}_{kwargs.get('width', 512)}_{kwargs.get('height', 512)}_{kwargs.get('image_strength', 0.8)}_{kwargs.get('image_guidance', 1.5)}_{lora_hash}"
+        return f"{kwargs.get('prompt', '')}_{kwargs.get('seed', -1)}_{kwargs.get('guidance_scale', 7.5)}_{kwargs.get('auto_downscale_large_images', True)}_{lora_hash}"
 
 
 

@@ -20,19 +20,19 @@ if os.path.exists(nodes_dir):
     sys.path.append(nodes_dir)
     # Import the main unified nodes (only from nodes root, no subfolders)
     try:
-        from eigenai_schnell_node import EigenAISchnellNode
+        from eigenai_flux_node import EigenAIFluxNode
         from eigenai_kontext_node import EigenAIKontextNode
         from eigenai_qwen_node import EigenAIQwenNode
         
         # Register the main unified nodes
         NODE_CLASS_MAPPINGS.update({
-            "EigenAISchnellNode": EigenAISchnellNode,
+            "EigenAIFluxNode": EigenAIFluxNode,
             "EigenAIKontextNode": EigenAIKontextNode,
             "EigenAIQwenNode": EigenAIQwenNode
         })
         
         NODE_DISPLAY_NAME_MAPPINGS.update({
-            "EigenAISchnellNode": "Eigen AI Schnell Generator",
+            "EigenAIFluxNode": "Eigen AI FLUX Generator",
             "EigenAIKontextNode": "Eigen AI Kontext Generator",
             "EigenAIQwenNode": "Eigen AI Qwen Generator"
         })
@@ -48,7 +48,7 @@ if os.path.exists(nodes_dir):
     try:
         from eigenai_text_node import EigenAITextNode
         from eigenai_lora_node import EigenAILoraNode
-        from eigenai_schnell_generator_node import EigenAISchnellGeneratorNode
+        from eigenai_flux_generator_node import EigenAIFluxGeneratorNode
         from eigenai_kontext_generator_node import EigenAIKontextGeneratorNode
         from eigenai_qwen_generator_node import EigenAIQwenGeneratorNode
         from eigenai_upscaler_node import EigenAIUpscalerNode
@@ -57,7 +57,7 @@ if os.path.exists(nodes_dir):
         NODE_CLASS_MAPPINGS.update({
             "EigenAITextNode": EigenAITextNode,
             "EigenAILoraNode": EigenAILoraNode,
-            "EigenAISchnellGeneratorNode": EigenAISchnellGeneratorNode,
+            "EigenAIFluxGeneratorNode": EigenAIFluxGeneratorNode,
             "EigenAIKontextGeneratorNode": EigenAIKontextGeneratorNode,
             "EigenAIQwenGeneratorNode": EigenAIQwenGeneratorNode,
             "EigenAIUpscalerNode": EigenAIUpscalerNode
@@ -66,7 +66,7 @@ if os.path.exists(nodes_dir):
         NODE_DISPLAY_NAME_MAPPINGS.update({
             "EigenAITextNode": "EigenAI Text Processor",
             "EigenAILoraNode": "EigenAI LoRA Manager",
-            "EigenAISchnellGeneratorNode": "EigenAI Schnell Generator",
+            "EigenAIFluxGeneratorNode": "EigenAI FLUX Generator",
             "EigenAIKontextGeneratorNode": "EigenAI Kontext Generator",
             "EigenAIQwenGeneratorNode": "EigenAI Qwen Generator",
             "EigenAIUpscalerNode": "EigenAI Upscaler"

@@ -61,21 +61,9 @@ class EigenAIKontextGeneratorNode:
                 "lora_config": ("LORA_CONFIG", {
                     "description": "LoRA configuration from LoRA node"
                 }),
-                "width": ("INT", {
-                    "default": 512,
-                    "min": 256,
-                    "max": 1024,
-                    "step": 64,
-                    "display": "slider",
-                    "description": "Output image width"
-                }),
-                "height": ("INT", {
-                    "default": 512,
-                    "min": 256,
-                    "max": 1024,
-                    "step": 64,
-                    "display": "slider",
-                    "description": "Output image height"
+                "auto_downscale_large_images": ("BOOLEAN", {
+                    "default": True,
+                    "description": "Auto-downscale large images (>512px) by half before processing"
                 }),
                 "seed": ("INT", {
                     "default": -1,
@@ -127,27 +115,12 @@ class EigenAIKontextGeneratorNode:
     CATEGORY = "Eigen AI Modular"
     OUTPUT_NODE = False
     
-    def generate_image(self, image, prompt, lora_config, width, height, 
+    def generate_image(self, image, prompt, lora_config,
+                      auto_downscale_large_images,
                       seed, inference_steps, guidance_scale, api_url,
                       background_removal, background_removal_strength):
         """
-        Generate image using Eigen AI FLUX Kontext API
-        
-        Args:
-            image (IMAGE): Input image tensor
-            prompt (str): Text prompt from text node
-            lora_config (dict): LoRA configuration from LoRA node
-            width (int): Output image width
-            height (int): Output image height
-            seed (int): Random seed (-1 for random)
-            inference_steps (int): Number of inference steps
-            guidance_scale (float): Guidance scale
-            api_url (str): API base URL
-            background_removal (bool): Whether to enable background removal
-            background_removal_strength (float): Background removal strength
-            
-        Returns:
-            image_tensor (IMAGE)
+        NOTE: width/height inputs removed. Auto-downscale option added.
         """
         try:
             # Update API URL if provided
@@ -170,21 +143,29 @@ class EigenAIKontextGeneratorNode:
             if pil_image.mode != "RGB":
                 pil_image = pil_image.convert("RGB")
             
-            # Resize image if needed
-            if pil_image.size != (width, height):
-                pil_image = pil_image.resize((width, height), Image.Resampling.LANCZOS)
+            # Auto downscale if needed (remove width/height dependency)
+            try:
+                if auto_downscale_large_images:
+                    ow, oh = pil_image.size
+                    if ow > 512 or oh > 512:
+                        nw, nh = max(1, ow // 2), max(1, oh // 2)
+                        logger.info(f"Auto-downscaling from {(ow, oh)} to {(nw, nh)}")
+                        pil_image = pil_image.resize((nw, nh), Image.Resampling.LANCZOS)
+            except Exception as resize_e:
+                logger.warning(f"Auto-downscale skipped due to error: {resize_e}")
             
             # Convert PIL image to base64 for API
             buffer = io.BytesIO()
             pil_image.save(buffer, format="PNG")
             image_base64 = base64.b64encode(buffer.getvalue()).decode()
             
-            # Prepare request payload
+            # Use processed image size for payload width/height
+            pw, ph = pil_image.size
             payload = {
                 "image": image_base64,
                 "prompt": prompt,
-                "width": width,
-                "height": height,
+                "width": pw,
+                "height": ph,
                 "inference_steps": inference_steps,
                 "guidance_scale": guidance_scale,
                 "background_removal": background_removal,
@@ -289,8 +270,16 @@ class EigenAIKontextGeneratorNode:
             error_msg = f"Error generating image: {str(e)}"
             logger.error(error_msg)
             
-            # Return a placeholder image and error info
-            placeholder = np.zeros((height, width, 3), dtype=np.float32)
+            # Fallback placeholder size from input image if available
+            ph, pw = 512, 512
+            try:
+                if isinstance(image, torch.Tensor) and len(image.shape) == 4:
+                    ph, pw = int(image.shape[1]), int(image.shape[2])
+                elif isinstance(image, Image.Image):
+                    pw, ph = image.size
+            except Exception:
+                pass
+            placeholder = np.zeros((ph, pw, 3), dtype=np.float32)
             placeholder[:, :, 0] = 0.8  # Light red for error
             # Add batch dimension for ComfyUI compatibility
             placeholder = np.expand_dims(placeholder, 0)
@@ -305,4 +294,4 @@ class EigenAIKontextGeneratorNode:
         """
         Force re-execution when generation parameters change
         """
-        return f"{kwargs.get('prompt', '')}_{kwargs.get('width', 512)}_{kwargs.get('height', 512)}_{kwargs.get('seed', -1)}_{kwargs.get('guidance_scale', 7.5)}"
+        return f"{kwargs.get('prompt', '')}_{kwargs.get('seed', -1)}_{kwargs.get('guidance_scale', 7.5)}_{kwargs.get('auto_downscale_large_images', True)}"

@@ -36,8 +36,8 @@
       }
     },
     {
-      "name": "EigenAISchnellGeneratorNode",
-      "display_name": "EigenAI Schnell Generator",
+      "name": "EigenAIFluxGeneratorNode",
+      "display_name": "EigenAI FLUX Generator",
       "category": "Eigen AI Modular",
       "description": "Generate images using Schnell API with inputs from text and LoRA nodes",
       "input_types": {
@@ -65,8 +65,7 @@
           "image": "IMAGE",
           "prompt": "STRING",
           "lora_config": "LORA_CONFIG",
-          "width": "INT",
-          "height": "INT",
+          "auto_downscale_large_images": "BOOLEAN",
           "seed": "INT",
           "inference_steps": "INT",
           "guidance_scale": "FLOAT",
@@ -116,10 +115,10 @@
       }
     },
     {
-      "name": "EigenAISchnellNode",
-      "display_name": "Eigen AI Schnell Generator",
+      "name": "EigenAIFluxNode",
+      "display_name": "Eigen AI FLUX Generator",
       "category": "Eigen AI Unified",
-      "description": "Generate images using FLUX.1-schnell model with LoRA support and large font prompt inputs",
+      "description": "Generate images using FLUX model with LoRA support and large font prompt inputs",
       "input_types": {
         "required": {
           "prompt": "STRING",
@@ -152,8 +151,7 @@
         "required": {
           "image": "IMAGE",
           "prompt": "STRING",
-          "width": "INT",
-          "height": "INT",
+          "auto_downscale_large_images": "BOOLEAN",
           "seed": "INT",
           "inference_steps": "INT",
           "guidance_scale": "FLOAT",
